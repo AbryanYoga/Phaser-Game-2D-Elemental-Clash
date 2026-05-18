@@ -10,6 +10,7 @@ class BattleScene extends Phaser.Scene {
         this.load.audio("jump", "assets/sounds/jump.mp3");
         this.load.audio("dash", "assets/sounds/dash.mp3");
         this.load.audio("hit", "assets/sounds/hit.mp3");
+        this.load.audio("special", "assets/sounds/special.mp3");
 
     }
 
@@ -18,7 +19,7 @@ class BattleScene extends Phaser.Scene {
         // BACKGROUND
         this.add.rectangle(640, 360, 1280, 720, 0x1e293b);
 
-        // UI
+        // PLAYER HP BAR
         this.playerHPBar = this.add.rectangle(
             250,
             50,
@@ -27,6 +28,7 @@ class BattleScene extends Phaser.Scene {
             0x00ff00
         );
 
+        // ENEMY HP BAR
         this.enemyHPBar = this.add.rectangle(
             1030,
             50,
@@ -35,6 +37,16 @@ class BattleScene extends Phaser.Scene {
             0x00ff00
         );
 
+        // ENERGY BAR
+        this.energyBar = this.add.rectangle(
+            250,
+            90,
+            300,
+            20,
+            0x00ffff
+        );
+
+        // TIMER
         this.timerText = this.add.text(610, 35, "60", {
             fontSize: "32px",
             color: "#ffffff"
@@ -85,7 +97,7 @@ class BattleScene extends Phaser.Scene {
             left: "A",
             right: "D",
             jump: Phaser.Input.Keyboard.KeyCodes.SPACE,
-            attack: Phaser.Input.Keyboard.KeyCodes.F
+            skill: Phaser.Input.Keyboard.KeyCodes.F
         });
 
         // DOUBLE JUMP
@@ -110,9 +122,14 @@ class BattleScene extends Phaser.Scene {
         this.playerHP = 100;
         this.enemyHP = 100;
 
+        // ENERGY
+        this.playerEnergy = 100;
+        this.maxEnergy = 100;
+
         // TIMER
         this.timeLeft = 60;
 
+        // TIMER EVENT
         this.time.addEvent({
 
             delay: 1000,
@@ -128,6 +145,50 @@ class BattleScene extends Phaser.Scene {
             loop: true
 
         });
+
+        // BASIC ATTACK MOUSE
+        this.input.on("pointerdown", () => {
+
+            let distance = Phaser.Math.Distance.Between(
+                this.player.x,
+                this.player.y,
+                this.enemy.x,
+                this.enemy.y
+            );
+
+            if (distance < 150) {
+
+                this.enemyHP -= 10;
+
+                this.sound.play("hit");
+
+                this.cameras.main.shake(100, 0.01);
+
+                // KNOCKBACK
+                if (this.enemy.x > this.player.x) {
+
+                    this.enemy.setVelocityX(400);
+
+                }
+                else {
+
+                    this.enemy.setVelocityX(-400);
+
+                }
+
+            }
+
+        });
+
+        // SPECIAL EFFECT
+        this.skillEffect = this.add.circle(
+            this.player.x,
+            this.player.y,
+            50,
+            0x00ffff
+        );
+
+        this.skillEffect.setVisible(false);
 
     }
 
@@ -206,7 +267,7 @@ class BattleScene extends Phaser.Scene {
 
         }
 
-        // GAMEPAD SUPPORT
+        // GAMEPAD
         if (this.pad) {
 
             let axisX = this.pad.axes[0].getValue();
@@ -269,34 +330,58 @@ class BattleScene extends Phaser.Scene {
 
         }
 
-        // PLAYER ATTACK
-        if (Phaser.Input.Keyboard.JustDown(this.keys.attack)) {
+        // SPECIAL SKILL
+        if (Phaser.Input.Keyboard.JustDown(this.keys.skill)) {
 
-            let distance = Phaser.Math.Distance.Between(
-                this.player.x,
-                this.player.y,
-                this.enemy.x,
-                this.enemy.y
-            );
+            // CHECK ENERGY
+            if (this.playerEnergy >= 30) {
 
-            // JIKA DEKAT
-            if (distance < 150) {
+                this.playerEnergy -= 30;
 
-                this.enemyHP -= 10;
+                this.sound.play("special");
 
-                this.sound.play("hit");
+                // EFFECT
+                this.skillEffect.setVisible(true);
 
-                this.cameras.main.shake(100, 0.01);
+                this.skillEffect.x = this.player.x;
 
-                // KNOCKBACK
-                if (this.enemy.x > this.player.x) {
+                this.skillEffect.y = this.player.y;
 
-                    this.enemy.setVelocityX(300);
+                // ELEMENT COLOR
+                this.skillEffect.fillColor = 0x00ffff;
 
-                }
-                else {
+                this.time.delayedCall(200, () => {
 
-                    this.enemy.setVelocityX(-300);
+                    this.skillEffect.setVisible(false);
+
+                });
+
+                // CAMERA SHAKE
+                this.cameras.main.shake(200, 0.02);
+
+                // DAMAGE
+                let distance = Phaser.Math.Distance.Between(
+                    this.player.x,
+                    this.player.y,
+                    this.enemy.x,
+                    this.enemy.y
+                );
+
+                if (distance < 250) {
+
+                    this.enemyHP -= 25;
+
+                    // STRONG KNOCKBACK
+                    if (this.enemy.x > this.player.x) {
+
+                        this.enemy.setVelocityX(700);
+
+                    }
+                    else {
+
+                        this.enemy.setVelocityX(-700);
+
+                    }
 
                 }
 
@@ -304,10 +389,16 @@ class BattleScene extends Phaser.Scene {
 
         }
 
+        // ENERGY REGEN
+        this.playerEnergy += 0.2;
+
         // UPDATE HP BAR
         this.playerHPBar.width = this.playerHP * 3;
 
         this.enemyHPBar.width = this.enemyHP * 3;
+
+        // UPDATE ENERGY BAR
+        this.energyBar.width = this.playerEnergy * 3;
 
         // CLAMP HP
         this.playerHP = Phaser.Math.Clamp(
@@ -318,6 +409,13 @@ class BattleScene extends Phaser.Scene {
 
         this.enemyHP = Phaser.Math.Clamp(
             this.enemyHP,
+            0,
+            100
+        );
+
+        // CLAMP ENERGY
+        this.playerEnergy = Phaser.Math.Clamp(
+            this.playerEnergy,
             0,
             100
         );
