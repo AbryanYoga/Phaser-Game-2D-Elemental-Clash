@@ -7,18 +7,16 @@ class BattleScene extends Phaser.Scene {
     preload() {
 
         // ====================
-        // IDLE
+        // CHARACTER BLAZE
         // ====================
 
+        // IDLE
         this.load.image("idle_1", "assets/characters/Blaze/idle_1_Fire.png");
         this.load.image("idle_2", "assets/characters/Blaze/idle_2_Fire.png");
         this.load.image("idle_3", "assets/characters/Blaze/idle_3_Fire.png");
         this.load.image("idle_4", "assets/characters/Blaze/idle_4_Fire.png");
 
-        // ====================
         // RUN
-        // ====================
-
         this.load.image("run_1", "assets/characters/Blaze/run_1_Fire.png");
         this.load.image("run_2", "assets/characters/Blaze/run_2_Fire.png");
         this.load.image("run_3", "assets/characters/Blaze/run_3_Fire.png");
@@ -26,26 +24,17 @@ class BattleScene extends Phaser.Scene {
         this.load.image("run_5", "assets/characters/Blaze/run_5_Fire.png");
         this.load.image("run_6", "assets/characters/Blaze/run_6_Fire.png");
 
-        // ====================
         // ATTACK
-        // ====================
-
         this.load.image("attack_1", "assets/characters/Blaze/attack_1_Fire.png");
         this.load.image("attack_2", "assets/characters/Blaze/attack_2_Fire.png");
         this.load.image("attack_3", "assets/characters/Blaze/attack_3_Fire.png");
         this.load.image("attack_4", "assets/characters/Blaze/attack_4_Fire.png");
 
-        // ====================
         // HURT
-        // ====================
-
         this.load.image("hurt_1", "assets/characters/Blaze/hurt_1_Fire.png");
         this.load.image("hurt_2", "assets/characters/Blaze/hurt_2_Fire.png");
 
-        // ====================
         // JUMP
-        // ====================
-
         this.load.image("jump_1", "assets/characters/Blaze/jump_1_Fire.png");
 
         // ====================
@@ -60,6 +49,7 @@ class BattleScene extends Phaser.Scene {
         // ====================
         // MAP
         // ====================
+
         this.load.image(
             "arena_fire",
             "assets/backgrounds/arena_fire.png"
@@ -84,21 +74,64 @@ class BattleScene extends Phaser.Scene {
 
     create() {
 
+        // ====================
+        // CHARACTER SELECT
+        // ====================
+
+        this.selectedCharacter =
+            localStorage.getItem(
+                "selectedCharacter"
+            ) || "Blaze";
+
+        // ====================
+        // CHARACTER DATA
+        // ====================
+
+        this.characterData = {
+
+            Blaze: {
+                color: 0xff6600,
+                damage: 25,
+                map: "arena_fire"
+            },
+
+            Frost: {
+                color: 0x66ccff,
+                damage: 20,
+                map: "arena_ice"
+            },
+
+            Volt: {
+                color: 0xffff00,
+                damage: 18,
+                map: "arena_volt"
+            },
+
+            Arka: {
+                color: 0x66ff99,
+                damage: 22,
+                map: "arena_nusantara"
+            }
+
+        };
+
+        this.activeCharacter =
+            this.characterData[
+                this.selectedCharacter
+            ];
+
+        // ====================
         // CAMERA
+        // ====================
+
         this.cameras.main.setZoom(1.2);
 
+        // ====================
         // BACKGROUND
-        this.maps = [
-            "arena_fire",
-            "arena_ice",
-            "arena_volt",
-            "arena_nusantara"
-        ];
+        // ====================
 
         this.selectedMap =
-            Phaser.Utils.Array.GetRandom(
-                this.maps
-            );
+            this.activeCharacter.map;
 
         this.background = this.add.image(
             640,
@@ -111,6 +144,7 @@ class BattleScene extends Phaser.Scene {
             720
         );
 
+        // DARK OVERLAY
         this.add.rectangle(
             640,
             360,
@@ -120,6 +154,7 @@ class BattleScene extends Phaser.Scene {
             0.15
         );
 
+        // MAP NAME
         this.mapText = this.add.text(
             20,
             20,
@@ -184,7 +219,7 @@ class BattleScene extends Phaser.Scene {
             90,
             300,
             20,
-            0x00ffff
+            this.activeCharacter.color
         );
 
         this.timerText = this.add.text(
@@ -271,17 +306,28 @@ class BattleScene extends Phaser.Scene {
         });
 
         // ====================
-        // DOUBLE JUMP
+        // STATS
         // ====================
 
         this.jumpCount = 0;
 
-        // ====================
-        // DASH
-        // ====================
-
         this.lastLeftPress = 0;
         this.lastRightPress = 0;
+
+        this.playerHP = 100;
+        this.enemyHP = 100;
+
+        this.playerEnergy = 100;
+        this.maxEnergy = 100;
+
+        this.timeLeft = 60;
+
+        // ====================
+        // COMBAT
+        // ====================
+
+        this.isAttacking = false;
+        this.canAttack = true;
 
         // ====================
         // GAMEPAD
@@ -303,34 +349,7 @@ class BattleScene extends Phaser.Scene {
         );
 
         // ====================
-        // HP
-        // ====================
-
-        this.playerHP = 100;
-        this.enemyHP = 100;
-
-        // ====================
-        // ENERGY
-        // ====================
-
-        this.playerEnergy = 100;
-        this.maxEnergy = 100;
-
-        // ====================
-        // COMBAT
-        // ====================
-
-        this.isAttacking = false;
-        this.canAttack = true;
-
-        // ====================
-        // TIMER
-        // ====================
-
-        this.timeLeft = 60;
-
-        // ====================
-        // ANIMATION
+        // ANIMATION DATA
         // ====================
 
         this.currentAnimation = "idle";
@@ -362,13 +381,10 @@ class BattleScene extends Phaser.Scene {
 
             callback: () => {
 
-                // JANGAN TIMPA ATTACK
                 if (
                     this.currentAnimation === "attack"
                 ) {
-
                     return;
-
                 }
 
                 // IDLE
@@ -448,21 +464,17 @@ class BattleScene extends Phaser.Scene {
         });
 
         // ====================
-        // SPECIAL EFFECT
+        // EFFECT
         // ====================
 
         this.skillEffect = this.add.circle(
             this.player.x,
             this.player.y,
             50,
-            0x00ffff
+            this.activeCharacter.color
         );
 
         this.skillEffect.setVisible(false);
-
-        // ====================
-        // HIT EFFECT
-        // ====================
 
         this.hitEffect = this.add.circle(
             0,
@@ -474,61 +486,40 @@ class BattleScene extends Phaser.Scene {
         this.hitEffect.setVisible(false);
 
         // ====================
-        // BASIC ATTACK
+        // ATTACK INPUT
         // ====================
 
         this.input.on("pointerdown", () => {
 
-            // COOLDOWN
             if (!this.canAttack) {
-
                 return;
-
             }
 
-            // ATTACK LOCK
             if (this.isAttacking) {
-
                 return;
-
             }
 
             this.canAttack = false;
-
             this.isAttacking = true;
 
             this.currentAnimation = "attack";
 
-            // ATTACK FRAME 1
             this.player.setTexture(
                 "attack_1"
             );
 
             this.time.delayedCall(80, () => {
-
-                this.player.setTexture(
-                    "attack_2"
-                );
-
+                this.player.setTexture("attack_2");
             });
 
             this.time.delayedCall(160, () => {
-
-                this.player.setTexture(
-                    "attack_3"
-                );
-
+                this.player.setTexture("attack_3");
             });
 
             this.time.delayedCall(240, () => {
-
-                this.player.setTexture(
-                    "attack_4"
-                );
-
+                this.player.setTexture("attack_4");
             });
 
-            // RETURN IDLE
             this.time.delayedCall(320, () => {
 
                 this.currentAnimation =
@@ -538,7 +529,6 @@ class BattleScene extends Phaser.Scene {
 
             });
 
-            // DISTANCE
             let distance =
                 Phaser.Math.Distance.Between(
                     this.player.x,
@@ -547,71 +537,18 @@ class BattleScene extends Phaser.Scene {
                     this.enemy.y
                 );
 
-            // MUSUH KENA
             if (distance < 150) {
 
                 this.enemyHP -= 10;
 
                 this.sound.play("hit");
 
-                // CAMERA SHAKE
                 this.cameras.main.shake(
                     120,
                     0.015
                 );
 
-                // HIT STOP
-                this.physics.pause();
-
-                this.time.delayedCall(
-                    60,
-                    () => {
-
-                        this.physics.resume();
-
-                    }
-                );
-
-                // HIT EFFECT
-                this.hitEffect.setVisible(
-                    true
-                );
-
-                this.hitEffect.x =
-                    this.enemy.x;
-
-                this.hitEffect.y =
-                    this.enemy.y;
-
-                this.hitEffect.setScale(1);
-
-                this.hitEffect.alpha = 1;
-
-                this.tweens.add({
-
-                    targets:
-                        this.hitEffect,
-
-                    scale: 2,
-
-                    alpha: 0,
-
-                    duration: 120,
-
-                    onComplete: () => {
-
-                        this.hitEffect.setVisible(
-                            false
-                        );
-
-                    }
-
-                });
-
-                // FLASH
-                this.enemy.setTint(
-                    0xffffff
-                );
+                this.enemy.setTint(0xffffff);
 
                 this.time.delayedCall(
                     100,
@@ -622,21 +559,6 @@ class BattleScene extends Phaser.Scene {
                     }
                 );
 
-                // ATTACK SCALE
-                this.player.setScale(4.3);
-
-                this.time.delayedCall(
-                    100,
-                    () => {
-
-                        this.player.setScale(
-                            4
-                        );
-
-                    }
-                );
-
-                // KNOCKBACK
                 if (
                     this.enemy.x >
                     this.player.x
@@ -655,36 +577,8 @@ class BattleScene extends Phaser.Scene {
 
                 }
 
-                // HURT
-                this.enemy.setTexture(
-                    "hurt_1"
-                );
-
-                this.time.delayedCall(
-                    100,
-                    () => {
-
-                        this.enemy.setTexture(
-                            "hurt_2"
-                        );
-
-                    }
-                );
-
-                this.time.delayedCall(
-                    200,
-                    () => {
-
-                        this.enemy.setTexture(
-                            "idle_1"
-                        );
-
-                    }
-                );
-
             }
 
-            // RESET COOLDOWN
             this.time.delayedCall(
                 400,
                 () => {
@@ -700,17 +594,14 @@ class BattleScene extends Phaser.Scene {
 
     update() {
 
-        // JANGAN GERAK SAAT ATTACK
         if (this.isAttacking) {
-
             return;
-
         }
 
-        // RESET MOVEMENT
+        // RESET
         this.player.setVelocityX(0);
 
-        // SHADOW FOLLOW
+        // SHADOW
         this.playerShadow.x =
             this.player.x;
 
@@ -718,43 +609,27 @@ class BattleScene extends Phaser.Scene {
             this.enemy.x;
 
         // ====================
-        // MOVE LEFT
+        // MOVE
         // ====================
 
         if (this.keys.left.isDown) {
 
-            this.player.setVelocityX(
-                -250
-            );
+            this.player.setVelocityX(-250);
 
             this.player.setFlipX(true);
 
             this.currentAnimation = "run";
 
         }
+        else if (this.keys.right.isDown) {
 
-        // ====================
-        // MOVE RIGHT
-        // ====================
-
-        else if (
-            this.keys.right.isDown
-        ) {
-
-            this.player.setVelocityX(
-                250
-            );
+            this.player.setVelocityX(250);
 
             this.player.setFlipX(false);
 
             this.currentAnimation = "run";
 
         }
-
-        // ====================
-        // IDLE
-        // ====================
-
         else {
 
             this.currentAnimation = "idle";
@@ -762,7 +637,7 @@ class BattleScene extends Phaser.Scene {
         }
 
         // ====================
-        // DOUBLE JUMP
+        // JUMP
         // ====================
 
         if (
@@ -789,7 +664,6 @@ class BattleScene extends Phaser.Scene {
 
         }
 
-        // RESET JUMP
         if (
             this.player.body.touching.down
         ) {
@@ -799,7 +673,7 @@ class BattleScene extends Phaser.Scene {
         }
 
         // ====================
-        // DASH LEFT
+        // DASH
         // ====================
 
         if (
@@ -820,19 +694,13 @@ class BattleScene extends Phaser.Scene {
                     -500
                 );
 
-                this.sound.play(
-                    "dash"
-                );
+                this.sound.play("dash");
 
             }
 
             this.lastLeftPress = time;
 
         }
-
-        // ====================
-        // DASH RIGHT
-        // ====================
 
         if (
             Phaser.Input.Keyboard.JustDown(
@@ -852,9 +720,7 @@ class BattleScene extends Phaser.Scene {
                     500
                 );
 
-                this.sound.play(
-                    "dash"
-                );
+                this.sound.play("dash");
 
             }
 
@@ -863,43 +729,7 @@ class BattleScene extends Phaser.Scene {
         }
 
         // ====================
-        // GAMEPAD
-        // ====================
-
-        if (this.pad) {
-
-            let axisX =
-                this.pad.axes[0].getValue();
-
-            if (axisX < -0.1) {
-
-                this.player.setVelocityX(
-                    -250
-                );
-
-                this.player.setFlipX(true);
-
-                this.currentAnimation =
-                    "run";
-
-            }
-            else if (axisX > 0.1) {
-
-                this.player.setVelocityX(
-                    250
-                );
-
-                this.player.setFlipX(false);
-
-                this.currentAnimation =
-                    "run";
-
-            }
-
-        }
-
-        // ====================
-        // ENEMY FACE PLAYER
+        // ENEMY AI
         // ====================
 
         if (
@@ -916,18 +746,12 @@ class BattleScene extends Phaser.Scene {
 
         }
 
-        // ====================
-        // AI MOVEMENT
-        // ====================
-
         if (
             this.enemy.x >
             this.player.x + 50
         ) {
 
-            this.enemy.setVelocityX(
-                -150
-            );
+            this.enemy.setVelocityX(-150);
 
         }
         else if (
@@ -935,9 +759,7 @@ class BattleScene extends Phaser.Scene {
             this.player.x - 50
         ) {
 
-            this.enemy.setVelocityX(
-                150
-            );
+            this.enemy.setVelocityX(150);
 
         }
         else {
@@ -947,7 +769,7 @@ class BattleScene extends Phaser.Scene {
         }
 
         // ====================
-        // AI ATTACK
+        // ENEMY ATTACK
         // ====================
 
         let enemyDistance =
@@ -980,11 +802,8 @@ class BattleScene extends Phaser.Scene {
 
                 this.playerEnergy -= 30;
 
-                this.sound.play(
-                    "special"
-                );
+                this.sound.play("special");
 
-                // EFFECT
                 this.skillEffect.setVisible(
                     true
                 );
@@ -994,9 +813,6 @@ class BattleScene extends Phaser.Scene {
 
                 this.skillEffect.y =
                     this.player.y;
-
-                this.skillEffect.fillColor =
-                    0xff6600;
 
                 this.time.delayedCall(
                     200,
@@ -1009,27 +825,11 @@ class BattleScene extends Phaser.Scene {
                     }
                 );
 
-                // SCALE
-                this.player.setScale(4.5);
-
-                this.time.delayedCall(
-                    150,
-                    () => {
-
-                        this.player.setScale(
-                            4
-                        );
-
-                    }
-                );
-
-                // SHAKE
                 this.cameras.main.shake(
                     200,
                     0.02
                 );
 
-                // DAMAGE
                 let distance =
                     Phaser.Math.Distance.Between(
                         this.player.x,
@@ -1040,7 +840,8 @@ class BattleScene extends Phaser.Scene {
 
                 if (distance < 250) {
 
-                    this.enemyHP -= 25;
+                    this.enemyHP -=
+                        this.activeCharacter.damage;
 
                     if (
                         this.enemy.x >
@@ -1073,7 +874,7 @@ class BattleScene extends Phaser.Scene {
         this.playerEnergy += 0.2;
 
         // ====================
-        // UPDATE UI
+        // UI UPDATE
         // ====================
 
         this.playerHPBar.width =
@@ -1114,19 +915,11 @@ class BattleScene extends Phaser.Scene {
         // GAME OVER
         // ====================
 
-        if (this.playerHP <= 0) {
-
-            this.scene.restart();
-
-        }
-
-        if (this.enemyHP <= 0) {
-
-            this.scene.restart();
-
-        }
-
-        if (this.timeLeft <= 0) {
+        if (
+            this.playerHP <= 0 ||
+            this.enemyHP <= 0 ||
+            this.timeLeft <= 0
+        ) {
 
             this.scene.restart();
 
