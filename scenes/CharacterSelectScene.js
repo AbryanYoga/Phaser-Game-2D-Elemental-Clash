@@ -6,6 +6,30 @@ class CharacterSelectScene extends Phaser.Scene {
 
     }
 
+    preload() {
+
+        this.load.image(
+            "blaze_portrait",
+            "assets/portraits/blaze.png"
+        );
+
+        this.load.image(
+            "frost_portrait",
+            "assets/portraits/frost.png"
+        );
+
+        this.load.image(
+            "volt_portrait",
+            "assets/portraits/volt.png"
+        );
+
+        this.load.image(
+            "arka_portrait",
+            "assets/portraits/arka.png"
+        );
+
+}
+
     create() {
 
         // BACKGROUND
@@ -14,115 +38,160 @@ class CharacterSelectScene extends Phaser.Scene {
             360,
             1280,
             720,
-            0x0f172a
+            0x111827
         );
 
         // TITLE
         this.add.text(
             360,
-            70,
-            "SELECT YOUR CHARACTER",
+            60,
+            "SELECT YOUR FIGHTER",
             {
-                fontSize: "48px",
+                fontSize: "52px",
                 color: "#ffffff",
-                fontStyle: "bold"
+                fontStyle: "bold",
+                stroke: "#ff6600",
+                strokeThickness: 6
             }
         );
 
         // CHARACTER LIST
         const characters = [
 
-            "Blaze",
-            "Frost",
-            "Volt",
-            "Terra"
+            {
+                name: "Blaze",
+                portrait: "blaze_portrait",
+                color: 0xff6600
+            },
 
-        ];
+            {
+                name: "Frost",
+                portrait: "frost_portrait",
+                color: 0x66ccff
+            },
+
+            {
+                name: "Volt",
+                portrait: "volt_portrait",
+                color: 0xffff00
+            },
+
+            {
+                name: "Arka",
+                portrait: "arka_portrait",
+                color: 0x66ff99
+            }
+
+];
 
         let startX = 250;
 
         let startY = 220;
 
-        characters.forEach((charName, index) => {
+        characters.forEach((charData, index) => {
 
-            const card =
-                this.add.rectangle(
+            const posX =
+                startX + (index % 2) * 420;
 
-                    startX + (index * 250),
-                    startY,
+            const posY =
+                startY + Math.floor(index / 2) * 250;
 
-                    180,
-                    220,
+            // CARD
+            const card = this.add.rectangle(
+                posX,
+                posY,
+                320,
+                180,
+                0x222222
+            )
+            .setStrokeStyle(
+                4,
+                charData.color
+            )
+            .setInteractive();
 
-                    0x1e293b
+            // PORTRAIT
+            const portrait = this.add.image(
+                posX,
+                posY - 10,
+                charData.portrait
+            );
 
-                )
-                .setStrokeStyle(
-                    4,
-                    0xffffff
-                )
-                .setInteractive();
+            portrait.setScale(3);
 
+            // NAME
             const text = this.add.text(
-
-                card.x - 40,
-                card.y + 70,
-
-                charName,
-
+                posX - 45,
+                posY + 60,
+                charData.name,
                 {
                     fontSize: "28px",
-                    color: "#ffffff"
+                    color: "#ffffff",
+                    fontStyle: "bold"
                 }
-
             );
 
             // HOVER
-            card.on(
-                "pointerover",
-                () => {
+            card.on("pointerover", () => {
 
-                    card.setFillStyle(
-                        0x334155
-                    );
+                card.setFillStyle(0x444444);
 
-                    card.setScale(1.05);
+                this.tweens.add({
 
-                }
-            );
+                    targets: card,
+                    scaleX: 1.05,
+                    scaleY: 1.05,
+                    duration: 120
 
-            card.on(
-                "pointerout",
-                () => {
+                });
 
-                    card.setFillStyle(
-                        0x1e293b
-                    );
+            });
 
-                    card.setScale(1);
+            // OUT
+            card.on("pointerout", () => {
 
-                }
-            );
+                card.setFillStyle(0x222222);
+
+                this.tweens.add({
+
+                    targets: card,
+                    scaleX: 1,
+                    scaleY: 1,
+                    duration: 120
+
+                });
+
+            });
 
             // CLICK
-            card.on(
-                "pointerdown",
-                () => {
+            card.on("pointerdown", () => {
 
-                    localStorage.setItem(
-                        "selectedCharacter",
-                        charName
-                    );
+                localStorage.setItem(
+                    "selectedCharacter",
+                    charData.name
+                );
 
-                    this.scene.start(
-                        "BattleScene"
-                    );
+                this.cameras.main.flash(
+                    300,
+                    255,
+                    255,
+                    255
+                );
 
-                }
-            );
+                this.time.delayedCall(
+                    300,
+                    () => {
+
+                        this.scene.start(
+                            "BattleScene"
+                        );
+
+                    }
+                );
+
+            });
 
         });
-
     }
 
 }
