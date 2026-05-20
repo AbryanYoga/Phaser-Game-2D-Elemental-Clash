@@ -4,6 +4,8 @@ const config = {
     height: 720,
     backgroundColor: "#111111",
 
+    pixelArt: true,
+
     physics: {
         default: "arcade",
         arcade: {
