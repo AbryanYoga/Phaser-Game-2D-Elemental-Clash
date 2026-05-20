@@ -57,6 +57,29 @@ class BattleScene extends Phaser.Scene {
         this.load.audio("hit", "assets/sounds/hit.mp3");
         this.load.audio("special", "assets/sounds/special.mp3");
 
+        // ====================
+        // MAP
+        // ====================
+        this.load.image(
+            "arena_fire",
+            "assets/backgrounds/arena_fire.png"
+        );
+
+        this.load.image(
+            "arena_ice",
+            "assets/backgrounds/arena_ice.png"
+        );
+
+        this.load.image(
+            "arena_volt",
+            "assets/backgrounds/arena_volt.png"
+        );
+
+        this.load.image(
+            "arena_nusantara",
+            "assets/backgrounds/arena_nusantara.png"
+        );
+
     }
 
     create() {
@@ -65,12 +88,53 @@ class BattleScene extends Phaser.Scene {
         this.cameras.main.setZoom(1.2);
 
         // BACKGROUND
+        this.maps = [
+            "arena_fire",
+            "arena_ice",
+            "arena_volt",
+            "arena_nusantara"
+        ];
+
+        this.selectedMap =
+            Phaser.Utils.Array.GetRandom(
+                this.maps
+            );
+
+        this.background = this.add.image(
+            640,
+            360,
+            this.selectedMap
+        );
+
+        this.background.setDisplaySize(
+            1280,
+            720
+        );
+
         this.add.rectangle(
             640,
             360,
             1280,
             720,
-            0x1e293b
+            0x000000,
+            0.15
+        );
+
+        this.mapText = this.add.text(
+            20,
+            20,
+            this.selectedMap
+                .replace("arena_", "")
+                .toUpperCase(),
+            {
+                fontSize: "24px",
+                color: "#ffffff",
+                backgroundColor: "#000000",
+                padding: {
+                    x: 10,
+                    y: 5
+                }
+            }
         );
 
         // ====================
@@ -142,7 +206,8 @@ class BattleScene extends Phaser.Scene {
             680,
             1280,
             80,
-            0x444444
+            0x000000,
+            0
         );
 
         this.physics.add.existing(

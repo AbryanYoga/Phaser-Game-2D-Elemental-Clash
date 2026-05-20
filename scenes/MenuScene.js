@@ -1,70 +1,142 @@
 class MenuScene extends Phaser.Scene {
+
     constructor() {
+
         super("MenuScene");
+
     }
 
     preload() {
-    this.load.audio("click", "assets/sounds/click.mp3");
-}
+
+        this.load.audio(
+            "click",
+            "assets/sounds/click.mp3"
+        );
+
+    }
 
     create() {
 
-        this.add.text(450, 120, "ELEMENTAL CLASH", {
-            fontSize: "48px",
-            color: "#ffffff",
-            fontStyle: "bold"
-        });
+        // BACKGROUND
+        this.add.rectangle(
+            640,
+            360,
+            1280,
+            720,
+            0x111827
+        );
 
-        const startButton = this.add.text(540, 300, "START GAME", {
-            fontSize: "32px",
-            backgroundColor: "#222",
-            padding: {
-                x: 20,
-                y: 10
+        // TITLE
+        this.add.text(
+            350,
+            120,
+            "ELEMENTAL CLASH",
+            {
+                fontSize: "64px",
+                color: "#ffffff",
+                fontStyle: "bold"
             }
-        })
+        );
+
+        // SUBTITLE
+        this.add.text(
+            470,
+            200,
+            "Pixel Fighting Arena",
+            {
+                fontSize: "24px",
+                color: "#aaaaaa"
+            }
+        );
+
+        // START BUTTON
+        const startButton = this.add.text(
+            500,
+            320,
+            "START GAME",
+            {
+                fontSize: "36px",
+                backgroundColor: "#222222",
+                color: "#ffffff",
+
+                padding: {
+                    x: 30,
+                    y: 15
+                }
+            }
+        )
         .setInteractive();
 
-        const exitButton = this.add.text(575, 400, "EXIT", {
-            fontSize: "32px",
-            backgroundColor: "#222",
-            padding: {
-                x: 20,
-                y: 10
+        // EXIT BUTTON
+        const exitButton = this.add.text(
+            565,
+            430,
+            "EXIT",
+            {
+                fontSize: "32px",
+                backgroundColor: "#222222",
+                color: "#ffffff",
+
+                padding: {
+                    x: 30,
+                    y: 15
+                }
             }
-        })
+        )
         .setInteractive();
 
+        // HOVER
         startButton.on("pointerover", () => {
+
             startButton.setStyle({
-                backgroundColor: "#555"
+                backgroundColor: "#444444"
             });
+
         });
 
         startButton.on("pointerout", () => {
-            startButton.setStyle({
-                backgroundColor: "#222"
-            });
-        });
 
-        startButton.on("pointerdown", () => {
-            this.scene.start("CharacterSelectScene");
+            startButton.setStyle({
+                backgroundColor: "#222222"
+            });
+
         });
 
         exitButton.on("pointerover", () => {
+
             exitButton.setStyle({
-                backgroundColor: "#555"
+                backgroundColor: "#444444"
             });
+
         });
 
         exitButton.on("pointerout", () => {
+
             exitButton.setStyle({
-                backgroundColor: "#222"
+                backgroundColor: "#222222"
             });
+
+        });
+
+        // CLICK
+        startButton.on("pointerdown", () => {
+
+            this.sound.play("click");
+
+            this.scene.start(
+                "CharacterSelectScene"
+            );
+
         });
 
         exitButton.on("pointerdown", () => {
+
+            this.sound.play("click");
+
             window.close();
+
         });
+
     }
+
 }
