@@ -17,7 +17,10 @@ class MenuScene extends Phaser.Scene {
 
     create() {
 
+        // ====================
         // BACKGROUND
+        // ====================
+
         this.add.rectangle(
             640,
             360,
@@ -26,10 +29,30 @@ class MenuScene extends Phaser.Scene {
             0x111827
         );
 
+        // GLOW BACKGROUND
+        const glow1 = this.add.circle(
+            200,
+            150,
+            180,
+            0xff6600,
+            0.15
+        );
+
+        const glow2 = this.add.circle(
+            1100,
+            600,
+            220,
+            0x00ccff,
+            0.12
+        );
+
+        // ====================
         // TITLE
-        this.add.text(
-            350,
-            120,
+        // ====================
+
+        const title = this.add.text(
+            315,
+            140,
             "ELEMENTAL CLASH",
             {
                 fontSize: "64px",
@@ -38,25 +61,62 @@ class MenuScene extends Phaser.Scene {
             }
         );
 
+        // SHADOW EFFECT
+        title.setShadow(
+            0,
+            0,
+            "#ff6600",
+            25,
+            true,
+            true
+        );
+
+        // ====================
         // SUBTITLE
+        // ====================
+
         this.add.text(
-            470,
-            200,
+            455,
+            225,
             "Pixel Fighting Arena",
             {
-                fontSize: "24px",
-                color: "#aaaaaa"
+                fontSize: "26px",
+                color: "#cbd5e1"
             }
         );
 
+        // ====================
         // START BUTTON
+        // ====================
+
         const startButton = this.add.text(
-            500,
-            320,
+            485,
+            350,
             "START GAME",
             {
-                fontSize: "36px",
-                backgroundColor: "#222222",
+                fontSize: "38px",
+                backgroundColor: "#1e293b",
+                color: "#ffffff",
+
+                padding: {
+                    x: 35,
+                    y: 18
+                }
+            }
+        )
+        .setInteractive();
+
+        // ====================
+        // FULLSCREEN BUTTON
+        // ====================
+
+        const fullscreenButton = this.add.text(
+            510,
+            450,
+            "FULLSCREEN",
+            {
+                fontSize: "30px",
+                backgroundColor: "#1e293b",
                 color: "#ffffff",
 
                 padding: {
@@ -67,73 +127,156 @@ class MenuScene extends Phaser.Scene {
         )
         .setInteractive();
 
+        // ====================
         // EXIT BUTTON
+        // ====================
+
         const exitButton = this.add.text(
             565,
-            430,
+            550,
             "EXIT",
             {
-                fontSize: "32px",
-                backgroundColor: "#222222",
+                fontSize: "30px",
+                backgroundColor: "#1e293b",
                 color: "#ffffff",
 
                 padding: {
-                    x: 30,
+                    x: 35,
                     y: 15
                 }
             }
         )
         .setInteractive();
 
-        // HOVER
-        startButton.on("pointerover", () => {
+        // ====================
+        // BUTTON ANIMATION
+        // ====================
 
-            startButton.setStyle({
-                backgroundColor: "#444444"
+        const addHoverEffect = (button) => {
+
+            button.on("pointerover", () => {
+
+                button.setStyle({
+                    backgroundColor: "#334155"
+                });
+
+                this.tweens.add({
+
+                    targets: button,
+
+                    scaleX: 1.08,
+                    scaleY: 1.08,
+
+                    duration: 100
+
+                });
+
             });
 
-        });
+            button.on("pointerout", () => {
 
-        startButton.on("pointerout", () => {
+                button.setStyle({
+                    backgroundColor: "#1e293b"
+                });
 
-            startButton.setStyle({
-                backgroundColor: "#222222"
+                this.tweens.add({
+
+                    targets: button,
+
+                    scaleX: 1,
+                    scaleY: 1,
+
+                    duration: 100
+
+                });
+
             });
 
-        });
+        };
 
-        exitButton.on("pointerover", () => {
+        addHoverEffect(startButton);
+        addHoverEffect(fullscreenButton);
+        addHoverEffect(exitButton);
 
-            exitButton.setStyle({
-                backgroundColor: "#444444"
-            });
+        // ====================
+        // START GAME
+        // ====================
 
-        });
-
-        exitButton.on("pointerout", () => {
-
-            exitButton.setStyle({
-                backgroundColor: "#222222"
-            });
-
-        });
-
-        // CLICK
         startButton.on("pointerdown", () => {
 
             this.sound.play("click");
 
-            this.scene.start(
-                "CharacterSelectScene"
+            this.cameras.main.flash(
+                200,
+                255,
+                255,
+                255
+            );
+
+            this.time.delayedCall(
+                200,
+                () => {
+
+                    this.scene.start(
+                        "CharacterSelectScene"
+                    );
+
+                }
             );
 
         });
+
+        // ====================
+        // FULLSCREEN
+        // ====================
+
+        fullscreenButton.on("pointerdown", () => {
+
+            this.sound.play("click");
+
+            if (this.scale.isFullscreen) {
+
+                this.scale.stopFullscreen();
+
+            }
+            else {
+
+                this.scale.startFullscreen();
+
+            }
+
+        });
+
+        // ====================
+        // EXIT
+        // ====================
 
         exitButton.on("pointerdown", () => {
 
             this.sound.play("click");
 
             window.close();
+
+        });
+
+        // ====================
+        // FLOATING EFFECT
+        // ====================
+
+        this.tweens.add({
+
+            targets: [
+                glow1,
+                glow2
+            ],
+
+            alpha: 0.25,
+
+            duration: 2000,
+
+            yoyo: true,
+
+            repeat: -1
 
         });
 
