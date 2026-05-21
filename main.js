@@ -6,7 +6,9 @@ const config = {
 
     height: 720,
 
-    backgroundColor: "#111111",
+    parent: "game-container",
+
+    backgroundColor: "#000000",
 
     pixelArt: true,
 
@@ -25,7 +27,7 @@ const config = {
         arcade: {
 
             gravity: {
-                y: 700
+                y: 1000
             },
 
             debug: false
@@ -38,14 +40,11 @@ const config = {
 
         MenuScene,
         CharacterSelectScene,
+        MapSelectScene,
         BattleScene
 
     ]
 
 };
 
-window.onload = () => {
-
-    new Phaser.Game(config);
-
-};
+const game = new Phaser.Game(config);

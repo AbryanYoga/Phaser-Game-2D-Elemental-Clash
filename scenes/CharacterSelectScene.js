@@ -8,16 +8,36 @@ class CharacterSelectScene extends Phaser.Scene {
 
     preload() {
 
+        // CHARACTER PREVIEW
+
         this.load.image(
             "blaze_preview",
             "assets/characters/Blaze/idle_1_Fire.png"
+        );
+
+        this.load.image(
+            "frost_preview",
+            "assets/characters/Frost/idle_1_Ice.png"
+        );
+
+        this.load.image(
+            "volt_preview",
+            "assets/characters/Volt/idle_1_Volt.png"
+        );
+
+        this.load.image(
+            "arka_preview",
+            "assets/characters/Arka/idle_1_Arka.png"
         );
 
     }
 
     create() {
 
+        // =========================
         // BACKGROUND
+        // =========================
+
         this.add.rectangle(
             640,
             360,
@@ -26,19 +46,26 @@ class CharacterSelectScene extends Phaser.Scene {
             0x0f172a
         );
 
+        // =========================
         // TITLE
+        // =========================
+
         this.add.text(
-            350,
-            50,
+            640,
+            60,
             "SELECT YOUR CHARACTER",
             {
                 fontSize: "52px",
                 color: "#ffffff",
                 fontStyle: "bold"
             }
-        );
+        )
+        .setOrigin(0.5);
 
+        // =========================
         // CHARACTER DATA
+        // =========================
+
         this.characters = [
 
             {
@@ -51,45 +78,36 @@ class CharacterSelectScene extends Phaser.Scene {
             {
                 name: "Frost",
                 color: 0x66ccff,
-                preview: "blaze_preview",
+                preview: "frost_preview",
                 description: "Ice Fighter"
             },
 
             {
                 name: "Volt",
                 color: 0xffff00,
-                preview: "blaze_preview",
-                description: "Lightning Fighter"
+                preview: "volt_preview",
+                description: "Thunder God"
             },
 
             {
                 name: "Arka",
                 color: 0x66ff99,
-                preview: "blaze_preview",
+                preview: "arka_preview",
                 description: "Nusantara Warrior"
             }
 
         ];
 
+        // =========================
         // CREATE CHARACTER CARDS
+        // =========================
+
         this.characters.forEach((char, index) => {
 
-            let x = 190 + (index * 300);
-            let y = 360;
+            const x = 190 + (index * 300);
+            const y = 370;
 
-            // GLOW
-            const glow = this.add.rectangle(
-                x,
-                y,
-                250,
-                360,
-                char.color,
-                0.15
-            );
-
-            glow.setVisible(false);
-
-            // CARD
+            // CARD BG
             const card = this.add.rectangle(
                 x,
                 y,
@@ -103,37 +121,52 @@ class CharacterSelectScene extends Phaser.Scene {
             )
             .setInteractive();
 
-            // PREVIEW
+            // GLOW
+            const glow = this.add.rectangle(
+                x,
+                y,
+                240,
+                340,
+                char.color,
+                0.12
+            );
+
+            glow.setVisible(false);
+
+            // PREVIEW IMAGE
             const preview = this.add.image(
                 x,
-                y - 50,
+                y - 35,
                 char.preview
             );
 
-            preview.setScale(12);
+            // FIX SCALE
+            preview.setScale(8);
 
             // NAME
             const nameText = this.add.text(
-                x - 50,
-                y + 80,
+                x,
+                y + 95,
                 char.name,
                 {
-                    fontSize: "30px",
+                    fontSize: "28px",
                     color: "#ffffff",
                     fontStyle: "bold"
                 }
-            );
+            )
+            .setOrigin(0.5);
 
             // DESC
             const descText = this.add.text(
-                x - 80,
-                y + 120,
+                x,
+                y + 130,
                 char.description,
                 {
                     fontSize: "18px",
                     color: "#cbd5e1"
                 }
-            );
+            )
+            .setOrigin(0.5);
 
             // DEPTH
             glow.setDepth(0);
@@ -142,7 +175,10 @@ class CharacterSelectScene extends Phaser.Scene {
             nameText.setDepth(2);
             descText.setDepth(2);
 
-            // HOVER
+            // =========================
+            // HOVER EFFECT
+            // =========================
+
             card.on("pointerover", () => {
 
                 glow.setVisible(true);
@@ -151,13 +187,17 @@ class CharacterSelectScene extends Phaser.Scene {
 
                     targets: [
                         card,
-                        preview
+                        glow,
+                        preview,
+                        nameText,
+                        descText
                     ],
 
-                    scaleX: 1.05,
-                    scaleY: 1.05,
+                    y: "-=12",
 
-                    duration: 120
+                    duration: 120,
+
+                    ease: "Power2"
 
                 });
 
@@ -171,19 +211,26 @@ class CharacterSelectScene extends Phaser.Scene {
 
                     targets: [
                         card,
-                        preview
+                        glow,
+                        preview,
+                        nameText,
+                        descText
                     ],
 
-                    scaleX: 1,
-                    scaleY: 1,
+                    y: "+=12",
 
-                    duration: 120
+                    duration: 120,
+
+                    ease: "Power2"
 
                 });
 
             });
 
+            // =========================
             // CLICK
+            // =========================
+
             card.on("pointerdown", () => {
 
                 localStorage.setItem(
@@ -192,18 +239,18 @@ class CharacterSelectScene extends Phaser.Scene {
                 );
 
                 this.cameras.main.flash(
-                    300,
+                    250,
                     255,
                     255,
                     255
                 );
 
                 this.time.delayedCall(
-                    300,
+                    250,
                     () => {
 
                         this.scene.start(
-                            "BattleScene"
+                            "MapSelectScene"
                         );
 
                     }
@@ -213,25 +260,29 @@ class CharacterSelectScene extends Phaser.Scene {
 
         });
 
-        // INFO PANEL
+        // =========================
+        // BOTTOM INFO PANEL
+        // =========================
+
         this.add.rectangle(
             640,
-            650,
+            660,
             500,
-            60,
+            55,
             0x111827,
             0.9
         );
 
         this.add.text(
-            430,
-            635,
+            640,
+            660,
             "Choose your elemental fighter",
             {
-                fontSize: "24px",
+                fontSize: "22px",
                 color: "#ffffff"
             }
-        );
+        )
+        .setOrigin(0.5);
 
     }
 
