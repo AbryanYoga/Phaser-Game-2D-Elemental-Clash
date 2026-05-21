@@ -10,6 +10,14 @@ const config = {
 
     pixelArt: true,
 
+    scale: {
+
+        mode: Phaser.Scale.FIT,
+
+        autoCenter: Phaser.Scale.CENTER_BOTH
+
+    },
+
     physics: {
 
         default: "arcade",
@@ -36,4 +44,8 @@ const config = {
 
 };
 
-const game = new Phaser.Game(config);
+window.onload = () => {
+
+    new Phaser.Game(config);
+
+};

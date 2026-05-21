@@ -70,6 +70,15 @@ class BattleScene extends Phaser.Scene {
             "assets/backgrounds/arena_nusantara.png"
         );
 
+        // ====================
+        // MUSIC
+        // ====================
+
+        this.load.audio(
+            "battle_music",
+            "assets/sounds/battle_music.mp3"
+        );
+
     }
 
     create() {
@@ -144,7 +153,25 @@ class BattleScene extends Phaser.Scene {
             720
         );
 
-        // DARK OVERLAY
+        // ====================
+        // PARALLAX
+        // ====================
+
+        this.background.setScrollFactor(0.2);
+
+        // ====================
+        // MAP OVERLAY
+        // ====================
+
+        this.mapOverlay = this.add.rectangle(
+            640,
+            360,
+            1280,
+            720,
+            this.activeCharacter.color,
+            0.08
+        );
+
         this.add.rectangle(
             640,
             360,
@@ -154,7 +181,10 @@ class BattleScene extends Phaser.Scene {
             0.15
         );
 
+        // ====================
         // MAP NAME
+        // ====================
+
         this.mapText = this.add.text(
             20,
             20,
@@ -171,6 +201,20 @@ class BattleScene extends Phaser.Scene {
                 }
             }
         );
+
+        // ====================
+        // MUSIC
+        // ====================
+
+        this.bgm = this.sound.add(
+            "battle_music",
+            {
+                volume: 0.5,
+                loop: true
+            }
+        );
+
+        this.bgm.play();
 
         // ====================
         // SHADOW
@@ -198,6 +242,22 @@ class BattleScene extends Phaser.Scene {
         // UI
         // ====================
 
+        this.playerHPBarBG = this.add.rectangle(
+            250,
+            50,
+            300,
+            30,
+            0x222222
+        );
+
+        this.enemyHPBarBG = this.add.rectangle(
+            1030,
+            50,
+            300,
+            30,
+            0x222222
+        );
+
         this.playerHPBar = this.add.rectangle(
             250,
             50,
@@ -212,6 +272,14 @@ class BattleScene extends Phaser.Scene {
             300,
             30,
             0x00ff00
+        );
+
+        this.energyBarBG = this.add.rectangle(
+            250,
+            90,
+            300,
+            20,
+            0x222222
         );
 
         this.energyBar = this.add.rectangle(
@@ -231,6 +299,40 @@ class BattleScene extends Phaser.Scene {
                 color: "#ffffff"
             }
         );
+
+        // ====================
+        // ROUND TEXT
+        // ====================
+
+        this.roundText = this.add.text(
+            560,
+            80,
+            "ROUND 1",
+            {
+                fontSize: "28px",
+                color: "#ffffff",
+                fontStyle: "bold"
+            }
+        );
+
+        // ====================
+        // WINNER TEXT
+        // ====================
+
+        this.winnerText = this.add.text(
+            410,
+            300,
+            "",
+            {
+                fontSize: "60px",
+                color: "#ffff00",
+                fontStyle: "bold",
+                stroke: "#000000",
+                strokeThickness: 8
+            }
+        );
+
+        this.winnerText.setVisible(false);
 
         // ====================
         // GROUND
@@ -281,6 +383,34 @@ class BattleScene extends Phaser.Scene {
         this.enemy.setCollideWorldBounds(true);
 
         // ====================
+        // PLAYER AURA
+        // ====================
+
+        this.playerAura = this.add.circle(
+            this.player.x,
+            this.player.y,
+            60,
+            this.activeCharacter.color,
+            0.15
+        );
+
+        this.playerAura.setBlendMode(
+            Phaser.BlendModes.ADD
+        );
+
+        this.enemyAura = this.add.circle(
+            this.enemy.x,
+            this.enemy.y,
+            60,
+            0xff0000,
+            0.08
+        );
+
+        this.enemyAura.setBlendMode(
+            Phaser.BlendModes.ADD
+        );
+
+        // ====================
         // COLLISION
         // ====================
 
@@ -302,7 +432,8 @@ class BattleScene extends Phaser.Scene {
             left: "A",
             right: "D",
             jump: Phaser.Input.Keyboard.KeyCodes.SPACE,
-            skill: Phaser.Input.Keyboard.KeyCodes.F
+            skill: Phaser.Input.Keyboard.KeyCodes.F,
+            pause: Phaser.Input.Keyboard.KeyCodes.ESC
         });
 
         // ====================
@@ -328,6 +459,8 @@ class BattleScene extends Phaser.Scene {
 
         this.isAttacking = false;
         this.canAttack = true;
+
+        this.gameEnded = false;
 
         // ====================
         // GAMEPAD
@@ -387,7 +520,6 @@ class BattleScene extends Phaser.Scene {
                     return;
                 }
 
-                // IDLE
                 if (
                     this.currentAnimation === "idle"
                 ) {
@@ -411,7 +543,6 @@ class BattleScene extends Phaser.Scene {
 
                 }
 
-                // RUN
                 if (
                     this.currentAnimation === "run"
                 ) {
@@ -450,6 +581,10 @@ class BattleScene extends Phaser.Scene {
             delay: 1000,
 
             callback: () => {
+
+                if (this.gameEnded) {
+                    return;
+                }
 
                 this.timeLeft--;
 
@@ -496,6 +631,10 @@ class BattleScene extends Phaser.Scene {
             }
 
             if (this.isAttacking) {
+                return;
+            }
+
+            if (this.gameEnded) {
                 return;
             }
 
@@ -548,6 +687,42 @@ class BattleScene extends Phaser.Scene {
                     0.015
                 );
 
+                // HIT EFFECT
+                this.hitEffect.setVisible(
+                    true
+                );
+
+                this.hitEffect.x =
+                    this.enemy.x;
+
+                this.hitEffect.y =
+                    this.enemy.y;
+
+                this.hitEffect.alpha = 1;
+
+                this.hitEffect.scale = 1;
+
+                this.tweens.add({
+
+                    targets: this.hitEffect,
+
+                    scale: 2,
+
+                    alpha: 0,
+
+                    duration: 120,
+
+                    onComplete: () => {
+
+                        this.hitEffect.setVisible(
+                            false
+                        );
+
+                    }
+
+                });
+
+                // FLASH
                 this.enemy.setTint(0xffffff);
 
                 this.time.delayedCall(
@@ -559,6 +734,19 @@ class BattleScene extends Phaser.Scene {
                     }
                 );
 
+                // SCALE EFFECT
+                this.player.setScale(4.3);
+
+                this.time.delayedCall(
+                    100,
+                    () => {
+
+                        this.player.setScale(4);
+
+                    }
+                );
+
+                // KNOCKBACK
                 if (
                     this.enemy.x >
                     this.player.x
@@ -594,19 +782,93 @@ class BattleScene extends Phaser.Scene {
 
     update() {
 
+        // ====================
+        // STOP IF GAME END
+        // ====================
+
+        if (this.gameEnded) {
+            return;
+        }
+
+        // ====================
+        // PAUSE GAME
+        // ====================
+
+        if (
+            Phaser.Input.Keyboard.JustDown(
+                this.keys.pause
+            )
+        ) {
+
+            if (this.physics.world.isPaused) {
+
+                this.physics.resume();
+
+            }
+            else {
+
+                this.physics.pause();
+
+            }
+
+        }
+
         if (this.isAttacking) {
             return;
         }
 
+        // ====================
         // RESET
+        // ====================
+
         this.player.setVelocityX(0);
 
-        // SHADOW
+        // ====================
+        // CAMERA FOLLOW
+        // ====================
+
+        this.cameras.main.scrollX =
+            (this.player.x - 640) * 0.03;
+
+        // ====================
+        // SHADOW FOLLOW
+        // ====================
+
         this.playerShadow.x =
             this.player.x;
 
         this.enemyShadow.x =
             this.enemy.x;
+
+        // ====================
+        // AURA FOLLOW
+        // ====================
+
+        this.playerAura.x =
+            this.player.x;
+
+        this.playerAura.y =
+            this.player.y;
+
+        this.enemyAura.x =
+            this.enemy.x;
+
+        this.enemyAura.y =
+            this.enemy.y;
+
+        // ====================
+        // AURA PULSE
+        // ====================
+
+        this.playerAura.scale += 0.002;
+
+        if (
+            this.playerAura.scale > 1.1
+        ) {
+
+            this.playerAura.scale = 1;
+
+        }
 
         // ====================
         // MOVE
@@ -673,7 +935,7 @@ class BattleScene extends Phaser.Scene {
         }
 
         // ====================
-        // DASH
+        // DASH LEFT
         // ====================
 
         if (
@@ -701,6 +963,10 @@ class BattleScene extends Phaser.Scene {
             this.lastLeftPress = time;
 
         }
+
+        // ====================
+        // DASH RIGHT
+        // ====================
 
         if (
             Phaser.Input.Keyboard.JustDown(
@@ -814,6 +1080,23 @@ class BattleScene extends Phaser.Scene {
                 this.skillEffect.y =
                     this.player.y;
 
+                // AURA BURST
+                this.playerAura.setScale(2);
+
+                this.playerAura.alpha = 0.4;
+
+                this.tweens.add({
+
+                    targets: this.playerAura,
+
+                    scale: 1,
+
+                    alpha: 0.15,
+
+                    duration: 300
+
+                });
+
                 this.time.delayedCall(
                     200,
                     () => {
@@ -842,6 +1125,19 @@ class BattleScene extends Phaser.Scene {
 
                     this.enemyHP -=
                         this.activeCharacter.damage;
+
+                    this.enemy.setTint(
+                        this.activeCharacter.color
+                    );
+
+                    this.time.delayedCall(
+                        200,
+                        () => {
+
+                            this.enemy.clearTint();
+
+                        }
+                    );
 
                     if (
                         this.enemy.x >
@@ -915,13 +1211,78 @@ class BattleScene extends Phaser.Scene {
         // GAME OVER
         // ====================
 
-        if (
-            this.playerHP <= 0 ||
-            this.enemyHP <= 0 ||
-            this.timeLeft <= 0
-        ) {
+        if (this.playerHP <= 0) {
 
-            this.scene.restart();
+            this.gameEnded = true;
+
+            this.winnerText.setText(
+                "ENEMY WINS"
+            );
+
+            this.winnerText.setVisible(true);
+
+            this.physics.pause();
+
+            this.time.delayedCall(
+                3000,
+                () => {
+
+                    this.bgm.stop();
+
+                    this.scene.restart();
+
+                }
+            );
+
+        }
+
+        if (this.enemyHP <= 0) {
+
+            this.gameEnded = true;
+
+            this.winnerText.setText(
+                "PLAYER WINS"
+            );
+
+            this.winnerText.setVisible(true);
+
+            this.physics.pause();
+
+            this.time.delayedCall(
+                3000,
+                () => {
+
+                    this.bgm.stop();
+
+                    this.scene.restart();
+
+                }
+            );
+
+        }
+
+        if (this.timeLeft <= 0) {
+
+            this.gameEnded = true;
+
+            this.winnerText.setText(
+                "TIME OVER"
+            );
+
+            this.winnerText.setVisible(true);
+
+            this.physics.pause();
+
+            this.time.delayedCall(
+                3000,
+                () => {
+
+                    this.bgm.stop();
+
+                    this.scene.restart();
+
+                }
+            );
 
         }
 

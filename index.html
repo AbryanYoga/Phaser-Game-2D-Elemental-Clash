@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -10,34 +12,51 @@
 
     <title>Elemental Clash</title>
 
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
+
     <style>
 
-        body{
-            margin:0;
-            overflow:hidden;
-            background:#000;
+        * {
+
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+
         }
 
-        canvas{
-            display:block;
-            margin:auto;
+        body {
+
+            width: 100vw;
+            height: 100vh;
+
+            overflow: hidden;
+
+            background: black;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+        }
+
+        canvas {
+
+            display: block;
+
         }
 
     </style>
 
 </head>
+
 <body>
 
-    <!-- PHASER DULU -->
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
-
-    <!-- SCENES -->
     <script src="scenes/MenuScene.js"></script>
     <script src="scenes/CharacterSelectScene.js"></script>
     <script src="scenes/BattleScene.js"></script>
 
-    <!-- MAIN -->
     <script src="main.js"></script>
 
 </body>
+
 </html>
