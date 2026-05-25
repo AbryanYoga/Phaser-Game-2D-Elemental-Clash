@@ -1,285 +1,180 @@
-class MenuScene extends Phaser.Scene {
-
+export class MenuScene extends Phaser.Scene {
     constructor() {
-
-        super("MenuScene");
-
+        super('MenuScene');
     }
 
-    preload() {
-
-        this.load.audio(
-            "click",
-            "assets/sounds/click.mp3"
-        );
-
+    init() {
+        // Initialize default audio preferences if not already set
+        if (this.registry.get('musicEnabled') === undefined) {
+            this.registry.set('musicEnabled', true);
+        }
+        if (this.registry.get('sfxEnabled') === undefined) {
+            this.registry.set('sfxEnabled', true);
+        }
     }
 
     create() {
+        // Set background (map/arena.png)
+        this.add.image(400, 300, 'background').setAlpha(0.6).setDisplaySize(800, 600);
 
-        // ====================
-        // BACKGROUND
-        // ====================
+        // Title text
+        this.titleText = this.add.text(400, 150, 'DARK FANTASY\nBOSS FIGHT', {
+            fontSize: '64px',
+            fill: '#e63946',
+            align: 'center',
+            fontStyle: 'bold',
+            stroke: '#000000',
+            strokeThickness: 8,
+            shadow: { offsetX: 3, offsetY: 3, color: '#000', blur: 4, stroke: true, fill: true }
+        }).setOrigin(0.5);
 
-        this.add.rectangle(
-            640,
-            360,
-            1280,
-            720,
-            0x111827
-        );
+        // Button lists
+        this.mainMenuButtons = [];
+        this.settingsButtons = [];
 
-        // GLOW BACKGROUND
-        const glow1 = this.add.circle(
-            200,
-            150,
-            180,
-            0xff6600,
-            0.15
-        );
+        // Setup Main Menu
+        this.createMainMenu();
 
-        const glow2 = this.add.circle(
-            1100,
-            600,
-            220,
-            0x00ccff,
-            0.12
-        );
+        // Setup Settings Menu (initially hidden)
+        this.createSettingsMenu();
 
-        // ====================
-        // TITLE
-        // ====================
-
-        const title = this.add.text(
-            315,
-            140,
-            "ELEMENTAL CLASH",
-            {
-                fontSize: "64px",
-                color: "#ffffff",
-                fontStyle: "bold"
-            }
-        );
-
-        // SHADOW EFFECT
-        title.setShadow(
-            0,
-            0,
-            "#ff6600",
-            25,
-            true,
-            true
-        );
-
-        // ====================
-        // SUBTITLE
-        // ====================
-
-        this.add.text(
-            455,
-            225,
-            "Pixel Fighting Arena",
-            {
-                fontSize: "26px",
-                color: "#cbd5e1"
-            }
-        );
-
-        // ====================
-        // START BUTTON
-        // ====================
-
-        const startButton = this.add.text(
-            485,
-            350,
-            "START GAME",
-            {
-                fontSize: "38px",
-                backgroundColor: "#1e293b",
-                color: "#ffffff",
-
-                padding: {
-                    x: 35,
-                    y: 18
-                }
-            }
-        )
-        .setInteractive();
-
-        // ====================
-        // FULLSCREEN BUTTON
-        // ====================
-
-        const fullscreenButton = this.add.text(
-            510,
-            450,
-            "FULLSCREEN",
-            {
-                fontSize: "30px",
-                backgroundColor: "#1e293b",
-                color: "#ffffff",
-
-                padding: {
-                    x: 30,
-                    y: 15
-                }
-            }
-        )
-        .setInteractive();
-
-        // ====================
-        // EXIT BUTTON
-        // ====================
-
-        const exitButton = this.add.text(
-            565,
-            550,
-            "EXIT",
-            {
-                fontSize: "30px",
-                backgroundColor: "#1e293b",
-                color: "#ffffff",
-
-                padding: {
-                    x: 35,
-                    y: 15
-                }
-            }
-        )
-        .setInteractive();
-
-        // ====================
-        // BUTTON ANIMATION
-        // ====================
-
-        const addHoverEffect = (button) => {
-
-            button.on("pointerover", () => {
-
-                button.setStyle({
-                    backgroundColor: "#334155"
-                });
-
-                this.tweens.add({
-
-                    targets: button,
-
-                    scaleX: 1.08,
-                    scaleY: 1.08,
-
-                    duration: 100
-
-                });
-
-            });
-
-            button.on("pointerout", () => {
-
-                button.setStyle({
-                    backgroundColor: "#1e293b"
-                });
-
-                this.tweens.add({
-
-                    targets: button,
-
-                    scaleX: 1,
-                    scaleY: 1,
-
-                    duration: 100
-
-                });
-
-            });
-
-        };
-
-        addHoverEffect(startButton);
-        addHoverEffect(fullscreenButton);
-        addHoverEffect(exitButton);
-
-        // ====================
-        // START GAME
-        // ====================
-
-        startButton.on("pointerdown", () => {
-
-            this.sound.play("click");
-
-            this.cameras.main.flash(
-                200,
-                255,
-                255,
-                255
-            );
-
-            this.time.delayedCall(
-                200,
-                () => {
-
-                    this.scene.start(
-                        "CharacterSelectScene"
-                    );
-
-                }
-            );
-
-        });
-
-        // ====================
-        // FULLSCREEN
-        // ====================
-
-        fullscreenButton.on("pointerdown", () => {
-
-            this.sound.play("click");
-
-            if (this.scale.isFullscreen) {
-
-                this.scale.stopFullscreen();
-
-            }
-            else {
-
-                this.scale.startFullscreen();
-
-            }
-
-        });
-
-        // ====================
-        // EXIT
-        // ====================
-
-        exitButton.on("pointerdown", () => {
-
-            this.sound.play("click");
-
-            window.close();
-
-        });
-
-        // ====================
-        // FLOATING EFFECT
-        // ====================
-
+        // Slow cinematic smoke/fog overlay
+        this.fog = this.add.graphics();
+        this.fog.fillStyle(0x0a001a, 0.25);
+        this.fog.fillRect(0, 0, 800, 600);
+        
+        // Dynamic red pulsing light aura from bottom
+        this.aura = this.add.graphics();
+        this.aura.fillStyle(0x9d0208, 0.15);
+        this.aura.fillRect(0, 500, 800, 100);
+        
         this.tweens.add({
-
-            targets: [
-                glow1,
-                glow2
-            ],
-
-            alpha: 0.25,
-
+            targets: this.aura,
+            alpha: 0.3,
             duration: 2000,
-
             yoyo: true,
-
             repeat: -1
-
         });
-
     }
 
+    createMainMenu() {
+        const createMenuBtn = (y, label, callback) => {
+            const btn = this.add.text(400, y, label, {
+                fontSize: '32px',
+                fill: '#ffffff',
+                fontStyle: 'bold',
+                stroke: '#000000',
+                strokeThickness: 4
+            })
+            .setOrigin(0.5)
+            .setInteractive({ useHandCursor: true })
+            .on('pointerover', () => btn.setStyle({ fill: '#ff4d6d' }))
+            .on('pointerout', () => btn.setStyle({ fill: '#ffffff' }))
+            .on('pointerdown', callback);
+            
+            this.mainMenuButtons.push(btn);
+            return btn;
+        };
+
+        createMenuBtn(300, 'START GAME', () => {
+            this.scene.start('BattleScene');
+        });
+
+        createMenuBtn(380, 'SETTINGS', () => {
+            this.showSettings(true);
+        });
+
+        createMenuBtn(460, 'EXIT', () => {
+            if (confirm('Exit game?')) {
+                // Try window close
+                window.close();
+                // Fallback for browsers that don't allow window.close()
+                const body = document.querySelector('body');
+                if (body) {
+                    body.innerHTML = '<div style="color:red; font-size:40px; text-align:center; margin-top:200px;">Game Exited. Close this tab.</div>';
+                }
+            }
+        });
+    }
+
+    createSettingsMenu() {
+        const createSettingBtn = (y, getLabel, toggleCallback) => {
+            const btn = this.add.text(400, y, getLabel(), {
+                fontSize: '28px',
+                fill: '#ffb703',
+                fontStyle: 'bold',
+                stroke: '#000000',
+                strokeThickness: 4
+            })
+            .setOrigin(0.5)
+            .setInteractive({ useHandCursor: true })
+            .on('pointerover', () => btn.setStyle({ fill: '#ffb703', strokeThickness: 6 }))
+            .on('pointerout', () => btn.setStyle({ fill: '#ffb703', strokeThickness: 4 }))
+            .on('pointerdown', () => {
+                toggleCallback();
+                btn.setText(getLabel());
+            });
+            
+            btn.setVisible(false);
+            this.settingsButtons.push(btn);
+            return btn;
+        };
+
+        // Music Toggle Button
+        createSettingBtn(300, 
+            () => `MUSIC: ${this.registry.get('musicEnabled') ? 'ENABLED' : 'MUTED'}`, 
+            () => {
+                const cur = this.registry.get('musicEnabled');
+                this.registry.set('musicEnabled', !cur);
+            }
+        );
+
+        // SFX Toggle Button
+        createSettingBtn(370, 
+            () => `SFX: ${this.registry.get('sfxEnabled') ? 'ENABLED' : 'MUTED'}`, 
+            () => {
+                const cur = this.registry.get('sfxEnabled');
+                this.registry.set('sfxEnabled', !cur);
+            }
+        );
+
+        // Back Button
+        const backBtn = this.add.text(400, 450, 'BACK TO MENU', {
+            fontSize: '28px',
+            fill: '#ffffff',
+            fontStyle: 'bold',
+            stroke: '#000000',
+            strokeThickness: 4
+        })
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true })
+        .on('pointerover', () => backBtn.setStyle({ fill: '#ff4d6d' }))
+        .on('pointerout', () => backBtn.setStyle({ fill: '#ffffff' }))
+        .on('pointerdown', () => {
+            this.showSettings(false);
+        });
+
+        backBtn.setVisible(false);
+        this.settingsButtons.push(backBtn);
+    }
+
+    showSettings(show) {
+        if (show) {
+            this.titleText.setText('SETTINGS');
+            this.mainMenuButtons.forEach(btn => btn.setVisible(false));
+            this.settingsButtons.forEach(btn => {
+                btn.setVisible(true);
+                // Refresh texts if they display dynamic states
+                if (btn.text.startsWith('MUSIC')) {
+                    btn.setText(`MUSIC: ${this.registry.get('musicEnabled') ? 'ENABLED' : 'MUTED'}`);
+                } else if (btn.text.startsWith('SFX')) {
+                    btn.setText(`SFX: ${this.registry.get('sfxEnabled') ? 'ENABLED' : 'MUTED'}`);
+                }
+            });
+        } else {
+            this.titleText.setText('DARK FANTASY\nBOSS FIGHT');
+            this.settingsButtons.forEach(btn => btn.setVisible(false));
+            this.mainMenuButtons.forEach(btn => btn.setVisible(true));
+        }
+    }
 }
