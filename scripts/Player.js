@@ -68,16 +68,21 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         ];
 
         let allValid = true;
+        let missingTextures = [];
+        
         requiredTextures.forEach(key => {
             const exists = this.scene.textures.exists(key);
             if (!exists) {
                 console.error(`[Player] Missing texture: ${key}`);
+                missingTextures.push(key);
                 allValid = false;
             }
         });
 
         if (allValid) {
             console.log('[Player] All textures validated ✓');
+        } else {
+            console.error('[Player] Missing textures:', missingTextures);
         }
 
         return allValid;
@@ -104,23 +109,27 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             console.log('[Player] Created: idle');
         }
 
-        // RUN - 6 frames, looping at 12 FPS
-        if (!anims.exists('run')) {
-            anims.create({
-                key: 'run',
-                frames: [
-                    { key: 'player_run_1' },
-                    { key: 'player_run_2' },
-                    { key: 'player_run_3' },
-                    { key: 'player_run_4' },
-                    { key: 'player_run_5' },
-                    { key: 'player_run_6' }
-                ],
-                frameRate: 12,
-                repeat: -1
-            });
-            console.log('[Player] Created: run');
+        // RUN - 6 frames, looping at 15 FPS
+        // Force remove if exists (cache issue)
+        if (anims.exists('run')) {
+            anims.remove('run');
+            console.log('[Player] Removed old run animation');
         }
+        
+        anims.create({
+            key: 'run',
+            frames: [
+                { key: 'player_run_1' },
+                { key: 'player_run_2' },
+                { key: 'player_run_3' },
+                { key: 'player_run_4' },
+                { key: 'player_run_5' },
+                { key: 'player_run_6' }
+            ],
+            frameRate: 15,
+            repeat: -1
+        });
+        console.log('[Player] Created: run (6 frames, 15 FPS)');
 
         // JUMP - 4 frames, NO REPEAT
         if (!anims.exists('jump')) {

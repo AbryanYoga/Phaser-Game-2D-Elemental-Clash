@@ -42,27 +42,30 @@ export class BattleScene extends Phaser.Scene {
     // PHYSICS GROUND - PLATFORM SOLID
     // =========================================
 
-    // Ground collider - tepat di bawah karakter
-    this.ground = this.add.rectangle(640, groundY + 60, 1280, 120, 0x000000, 0);
+    // Ground collider - TEPAT di bawah visual ground
+    this.ground = this.add.rectangle(640, groundY + 5, 1280, 20, 0x000000, 0);
     this.physics.add.existing(this.ground, true);
+    
+    // Debug: Show platform (hapus setelah fix)
+    // this.ground.setFillStyle(0xff0000, 0.3);
 
     // =========================================
     // PLAYER
     // =========================================
 
     // Spawn di atas ground
-    this.player = new Player(this, 250, groundY - 10);
+    this.player = new Player(this, 250, groundY);
     
-    // Disable gravity untuk player
+    // Gravity counter untuk mencegah jatuh
     this.player.body.setGravityY(-1200);
 
     // =========================================
     // BOSS
     // =========================================
 
-    this.boss = new Boss(this, 1000, groundY - 20);
+    this.boss = new Boss(this, 1000, groundY);
     
-    // Disable gravity untuk boss
+    // Gravity counter untuk mencegah jatuh
     this.boss.body.setGravityY(-1200);
 
     // =========================================
@@ -163,6 +166,63 @@ export class BattleScene extends Phaser.Scene {
         this.updateBossHPBar();
 
         this.add.text(1000, 65, 'BATHARA KALA', { fontSize: '18px', fill: '#f00', fontStyle: 'bold' }).setScrollFactor(0);
+        
+        // =========================================
+        // CONTROLS GUIDE - PANDUAN KONTROL
+        // =========================================
+        
+        const controlsBg = this.add.graphics();
+        controlsBg.fillStyle(0x000000, 0.7);
+        controlsBg.fillRect(30, 600, 340, 100).setScrollFactor(0);
+        
+        this.add.text(40, 610, 'CONTROLS / KONTROL:', {
+            fontSize: '16px',
+            fill: '#ffaa00',
+            fontStyle: 'bold'
+        }).setScrollFactor(0);
+        
+        this.add.text(40, 635, 'A / D - Run Left/Right (Lari)', {
+            fontSize: '14px',
+            fill: '#ffffff'
+        }).setScrollFactor(0);
+        
+        this.add.text(40, 655, 'Left Click - Attack (Serang)', {
+            fontSize: '14px',
+            fill: '#ffffff'
+        }).setScrollFactor(0);
+        
+        this.add.text(40, 675, 'F / K - Special Attack (Serangan Khusus)', {
+            fontSize: '14px',
+            fill: '#ffffff'
+        }).setScrollFactor(0);
+        
+        // Fade out controls after 8 seconds
+        this.time.delayedCall(8000, () => {
+            this.tweens.add({
+                targets: [controlsBg],
+                alpha: 0,
+                duration: 1000,
+                onComplete: () => {
+                    controlsBg.destroy();
+                }
+            });
+            
+            // Fade out all control texts
+            const controlTexts = this.children.list.filter(child => 
+                child.type === 'Text' && 
+                child.y >= 610 && 
+                child.y <= 680
+            );
+            
+            this.tweens.add({
+                targets: controlTexts,
+                alpha: 0,
+                duration: 1000,
+                onComplete: () => {
+                    controlTexts.forEach(text => text.destroy());
+                }
+            });
+        });
     }
 
     updatePlayerHPBar() {

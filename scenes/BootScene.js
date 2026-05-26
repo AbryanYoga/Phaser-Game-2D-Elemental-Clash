@@ -8,32 +8,32 @@ export class BootScene extends Phaser.Scene {
         this.load.setBaseURL('./');
 
         // Player - Arka Character
-        this.load.image('player_idle_1', 'assets/characters/Arka/idle_1.png');
-        this.load.image('player_idle_2', 'assets/characters/Arka/idle_2.png');
-        this.load.image('player_idle_3', 'assets/characters/Arka/idle_3.png');
-        this.load.image('player_idle_4', 'assets/characters/Arka/idle_4.png');
-        this.load.image('player_idle_5', 'assets/characters/Arka/idle_5.png');
+        this.load.image('player_idle_1', 'assets/characters/Arka/idle/idle_1.png');
+        this.load.image('player_idle_2', 'assets/characters/Arka/idle/idle_2.png');
+        this.load.image('player_idle_3', 'assets/characters/Arka/idle/idle_3.png');
+        this.load.image('player_idle_4', 'assets/characters/Arka/idle/idle_4.png');
+        this.load.image('player_idle_5', 'assets/characters/Arka/idle/idle_5.png');
         
-        this.load.image('player_run_1', 'assets/characters/Arka/run_1.png');
-        this.load.image('player_run_2', 'assets/characters/Arka/run_2.png');
-        this.load.image('player_run_3', 'assets/characters/Arka/run_3.png');
-        this.load.image('player_run_4', 'assets/characters/Arka/run_4.png');
-        this.load.image('player_run_5', 'assets/characters/Arka/run_5.png');
-        this.load.image('player_run_6', 'assets/characters/Arka/run_6.png');
+        this.load.image('player_run_1', 'assets/characters/Arka/run/run_1.png');
+        this.load.image('player_run_2', 'assets/characters/Arka/run/run_2.png');
+        this.load.image('player_run_3', 'assets/characters/Arka/run/run_3.png');
+        this.load.image('player_run_4', 'assets/characters/Arka/run/run_4.png');
+        this.load.image('player_run_5', 'assets/characters/Arka/run/run_5.png');
+        this.load.image('player_run_6', 'assets/characters/Arka/run/run_6.png');
         
-        this.load.image('player_jump_1', 'assets/characters/Arka/jump_1.png');
-        this.load.image('player_jump_2', 'assets/characters/Arka/jump_2.png');
-        this.load.image('player_jump_3', 'assets/characters/Arka/jump_3.png');
-        this.load.image('player_jump_4', 'assets/characters/Arka/jump_4.png');
+        this.load.image('player_jump_1', 'assets/characters/Arka/jump/jump_1.png');
+        this.load.image('player_jump_2', 'assets/characters/Arka/jump/jump_2.png');
+        this.load.image('player_jump_3', 'assets/characters/Arka/jump/jump_3.png');
+        this.load.image('player_jump_4', 'assets/characters/Arka/jump/jump_4.png');
         
-        this.load.image('player_attack_1', 'assets/characters/Arka/attack_1.png');
-        this.load.image('player_attack_2', 'assets/characters/Arka/attack_2.png');
-        this.load.image('player_attack_3', 'assets/characters/Arka/attack_3.png');
-        this.load.image('player_attack_4', 'assets/characters/Arka/attack_4.png');
-        this.load.image('player_attack_5', 'assets/characters/Arka/attack_5.png');
+        this.load.image('player_attack_1', 'assets/characters/Arka/attack/attack_1.png');
+        this.load.image('player_attack_2', 'assets/characters/Arka/attack/attack_2.png');
+        this.load.image('player_attack_3', 'assets/characters/Arka/attack/attack_3.png');
+        this.load.image('player_attack_4', 'assets/characters/Arka/attack/attack_4.png');
+        this.load.image('player_attack_5', 'assets/characters/Arka/attack/attack_5.png');
         
-        this.load.image('player_dead', 'assets/characters/Arka/dead.png');
-        this.load.image('player_win', 'assets/characters/Arka/win.png');
+        this.load.image('player_dead', 'assets/characters/Arka/dead/dead.png');
+        this.load.image('player_win', 'assets/characters/Arka/win/win.png');
 
         // Boss - Bathara Kala
         this.load.image('boss_idle_1', 'assets/bathara kala/idle_1boss.png');
@@ -91,9 +91,28 @@ export class BootScene extends Phaser.Scene {
             progressBar.fillRect(250, 280, 300 * value, 30);
         });
 
+        this.load.on('loaderror', (file) => {
+            console.error('[BootScene] Failed to load:', file.key, file.src);
+        });
+
+        this.load.on('filecomplete', (key) => {
+            if (key.startsWith('player_run')) {
+                console.log('[BootScene] Loaded:', key);
+            }
+        });
+
         this.load.on('complete', () => {
             progressBar.destroy();
             progressBox.destroy();
+            
+            // Verify run textures loaded
+            console.log('[BootScene] Checking run textures...');
+            for (let i = 1; i <= 6; i++) {
+                const key = `player_run_${i}`;
+                const exists = this.textures.exists(key);
+                console.log(`[BootScene] ${key}: ${exists ? '✓' : '✗'}`);
+            }
+            
             this.scene.start('MenuScene');
         });
     }
