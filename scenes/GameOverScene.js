@@ -14,7 +14,7 @@ export class GameOverScene extends Phaser.Scene {
         const isVictory = this.result === 'VICTORY';
         
         // Title
-        const title = this.add.text(640, 250, this.result, {
+        const title = this.add.text(640, 250, isVictory ? 'KEMENANGAN' : 'KEKALAHAN', {
             fontSize: '80px',
             fill: isVictory ? '#ffff00' : '#ff0000',
             fontStyle: 'bold',
@@ -24,14 +24,14 @@ export class GameOverScene extends Phaser.Scene {
         
         // Subtitle
         const subtitle = this.add.text(640, 340, 
-            isVictory ? 'Bathara Kala Defeated!' : 'Arka Has Fallen...', {
+            isVictory ? 'Bathara Kala Telah Dikalahkan!' : 'Arka Telah Gugur...', {
             fontSize: '32px',
             fill: '#ffffff',
             fontStyle: 'bold'
         }).setOrigin(0.5);
 
         // Main Menu Button (centered, no retry)
-        const menuBtn = this.add.text(640, 450, 'MAIN MENU', {
+        const menuBtn = this.add.text(640, 450, 'MENU UTAMA', {
             fontSize: '40px',
             fill: '#ffffff',
             fontStyle: 'bold',

@@ -18,7 +18,7 @@ export class MenuScene extends Phaser.Scene {
         this.add.image(640, 360, 'background').setAlpha(0.6).setDisplaySize(1280, 720);
 
         // Title text
-        this.titleText = this.add.text(640, 200, 'DARK FANTASY\nBOSS FIGHT', {
+        this.titleText = this.add.text(640, 200, 'ELEMENTAL\nCLASH', {
             fontSize: '80px',
             fill: '#e63946',
             align: 'center',
@@ -76,26 +76,26 @@ export class MenuScene extends Phaser.Scene {
             return btn;
         };
 
-        createMenuBtn(350, 'START STORY', () => {
+        createMenuBtn(350, 'MULAI CERITA', () => {
             this.scene.start('IntroScene');
         });
 
-        createMenuBtn(430, 'SKIP TO BATTLE', () => {
+        createMenuBtn(430, 'LANGSUNG BERTARUNG', () => {
             this.scene.start('BattleScene');
         });
 
-        createMenuBtn(510, 'SETTINGS', () => {
+        createMenuBtn(510, 'PENGATURAN', () => {
             this.showSettings(true);
         });
 
-        createMenuBtn(590, 'EXIT', () => {
-            if (confirm('Exit game?')) {
+        createMenuBtn(590, 'KELUAR', () => {
+            if (confirm('Keluar dari permainan?')) {
                 // Try window close
                 window.close();
                 // Fallback for browsers that don't allow window.close()
                 const body = document.querySelector('body');
                 if (body) {
-                    body.innerHTML = '<div style="color:red; font-size:40px; text-align:center; margin-top:200px;">Game Exited. Close this tab.</div>';
+                    body.innerHTML = '<div style="color:red; font-size:40px; text-align:center; margin-top:200px;">Permainan Ditutup. Tutup tab ini.</div>';
                 }
             }
         });
@@ -126,7 +126,7 @@ export class MenuScene extends Phaser.Scene {
 
         // Music Toggle Button
         createSettingBtn(300, 
-            () => `MUSIC: ${this.registry.get('musicEnabled') ? 'ENABLED' : 'MUTED'}`, 
+            () => `MUSIK: ${this.registry.get('musicEnabled') ? 'AKTIF' : 'MATI'}`, 
             () => {
                 const cur = this.registry.get('musicEnabled');
                 this.registry.set('musicEnabled', !cur);
@@ -135,7 +135,7 @@ export class MenuScene extends Phaser.Scene {
 
         // SFX Toggle Button
         createSettingBtn(370, 
-            () => `SFX: ${this.registry.get('sfxEnabled') ? 'ENABLED' : 'MUTED'}`, 
+            () => `EFEK SUARA: ${this.registry.get('sfxEnabled') ? 'AKTIF' : 'MATI'}`, 
             () => {
                 const cur = this.registry.get('sfxEnabled');
                 this.registry.set('sfxEnabled', !cur);
@@ -143,7 +143,7 @@ export class MenuScene extends Phaser.Scene {
         );
 
         // Back Button
-        const backBtn = this.add.text(400, 450, 'BACK TO MENU', {
+        const backBtn = this.add.text(400, 450, 'KEMBALI KE MENU', {
             fontSize: '28px',
             fill: '#ffffff',
             fontStyle: 'bold',
@@ -164,19 +164,19 @@ export class MenuScene extends Phaser.Scene {
 
     showSettings(show) {
         if (show) {
-            this.titleText.setText('SETTINGS');
+            this.titleText.setText('PENGATURAN');
             this.mainMenuButtons.forEach(btn => btn.setVisible(false));
             this.settingsButtons.forEach(btn => {
                 btn.setVisible(true);
                 // Refresh texts if they display dynamic states
-                if (btn.text.startsWith('MUSIC')) {
-                    btn.setText(`MUSIC: ${this.registry.get('musicEnabled') ? 'ENABLED' : 'MUTED'}`);
-                } else if (btn.text.startsWith('SFX')) {
-                    btn.setText(`SFX: ${this.registry.get('sfxEnabled') ? 'ENABLED' : 'MUTED'}`);
+                if (btn.text.startsWith('MUSIK')) {
+                    btn.setText(`MUSIK: ${this.registry.get('musicEnabled') ? 'AKTIF' : 'MATI'}`);
+                } else if (btn.text.startsWith('EFEK')) {
+                    btn.setText(`EFEK SUARA: ${this.registry.get('sfxEnabled') ? 'AKTIF' : 'MATI'}`);
                 }
             });
         } else {
-            this.titleText.setText('DARK FANTASY\nBOSS FIGHT');
+            this.titleText.setText('ELEMENTAL\nCLASH');
             this.settingsButtons.forEach(btn => btn.setVisible(false));
             this.mainMenuButtons.forEach(btn => btn.setVisible(true));
         }

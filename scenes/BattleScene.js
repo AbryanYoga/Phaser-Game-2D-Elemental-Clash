@@ -159,7 +159,7 @@ export class BattleScene extends Phaser.Scene {
         
         this.specialCDBar = this.add.graphics();
         
-        this.specialCDText = this.add.text(30, 125, 'Special [F/K]', { 
+        this.specialCDText = this.add.text(30, 125, 'Serangan Khusus [F/K]', { 
             fontSize: '16px', 
             fill: '#ffaa00',
             fontStyle: 'bold'
@@ -181,25 +181,25 @@ export class BattleScene extends Phaser.Scene {
         
         const controlsBg = this.add.graphics();
         controlsBg.fillStyle(0x000000, 0.7);
-        controlsBg.fillRect(30, 600, 340, 100).setScrollFactor(0);
+        controlsBg.fillRect(30, 600, 360, 100).setScrollFactor(0);
         
-        this.add.text(40, 610, 'CONTROLS / KONTROL:', {
+        this.add.text(40, 610, 'KONTROL PERMAINAN:', {
             fontSize: '16px',
             fill: '#ffaa00',
             fontStyle: 'bold'
         }).setScrollFactor(0);
         
-        this.add.text(40, 635, 'A / D - Run Left/Right (Lari)', {
+        this.add.text(40, 635, 'A / D - Bergerak Kiri/Kanan', {
             fontSize: '14px',
             fill: '#ffffff'
         }).setScrollFactor(0);
         
-        this.add.text(40, 655, 'Left Click - Attack (Serang)', {
+        this.add.text(40, 655, 'Klik Kiri - Serang', {
             fontSize: '14px',
             fill: '#ffffff'
         }).setScrollFactor(0);
         
-        this.add.text(40, 675, 'F / K - Special Attack (Serangan Khusus)', {
+        this.add.text(40, 675, 'F / K - Serangan Khusus', {
             fontSize: '14px',
             fill: '#ffffff'
         }).setScrollFactor(0);
@@ -267,12 +267,12 @@ export class BattleScene extends Phaser.Scene {
         if (percent >= 1) {
             this.specialCDBar.fillStyle(0xffaa00, 1);
             this.specialCDText.setColor('#ffaa00');
-            this.specialCDText.setText('Special [F/K] READY!');
+            this.specialCDText.setText('Serangan Khusus [F/K] SIAP!');
         } else {
             this.specialCDBar.fillStyle(0x666666, 1);
             this.specialCDText.setColor('#888888');
             const timeLeft = Math.ceil(this.player.specialCooldown / 1000);
-            this.specialCDText.setText(`Special [F/K] ${timeLeft}s`);
+            this.specialCDText.setText(`Serangan Khusus [F/K] ${timeLeft}d`);
         }
         
         const width = percent * 250;
@@ -315,7 +315,7 @@ export class BattleScene extends Phaser.Scene {
         this.player.active = false;
         this.boss.active = false;
         
-        const introText = this.add.text(640, 360, 'BATHARA KALA AWAKENS', {
+        const introText = this.add.text(640, 360, 'BATHARA KALA BANGKIT', {
             fontSize: '64px',
             fill: '#ff0000',
             fontStyle: 'bold'

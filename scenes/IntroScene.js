@@ -222,7 +222,7 @@ export class IntroScene extends Phaser.Scene {
         this.bossSubtitleText.setDepth(200);
         
         // Skip hint
-        this.skipHint = this.add.text(640, 690, '[ESC] Skip Cutscene', {
+        this.skipHint = this.add.text(640, 690, '[ESC] Lewati Cerita', {
             fontSize: '16px',
             fill: '#666666',
             fontFamily: 'Arial'
@@ -396,48 +396,48 @@ export class IntroScene extends Phaser.Scene {
         this.tweens.add({
             targets: this.blackOverlay,
             alpha: 0.3,
-            duration: 2000
+            duration: 1500
         });
         
         const texts = [
             'Desa Kertaraga...',
-            'Tanah yang hidup damai...',
-            '...hingga malam kutukan itu tiba.'
+            'Sebuah desa yang damai di kaki Gunung Merapi...',
+            'Namun malam ini, kutukan kuno bangkit kembali...'
         ];
         
-        let delay = 1000;
+        let delay = 800;
         texts.forEach((text, index) => {
             this.time.delayedCall(delay, () => {
-                const textObj = this.add.text(0, index * 60 - 60, '', {
-                    fontSize: '28px',
-                    fill: '#aa8866',
-                    fontFamily: 'Courier New',
+                const textObj = this.add.text(0, index * 70 - 70, '', {
+                    fontSize: '26px',
+                    fill: '#d4af37',
+                    fontFamily: 'Georgia',
                     align: 'center',
                     stroke: '#000000',
-                    strokeThickness: 3
+                    strokeThickness: 4
                 }).setOrigin(0.5);
                 
                 this.openingTextContainer.add(textObj);
                 
                 // Typewriter effect
-                this.typewriterEffect(textObj, text, 80);
+                this.typewriterEffect(textObj, text, 60);
             });
-            delay += 3500;
+            delay += 3000;
         });
         
         // Fade in container
         this.tweens.add({
             targets: this.openingTextContainer,
             alpha: 1,
-            duration: 1500
+            duration: 1200
         });
         
         // After all texts, fade out and show village
-        this.time.delayedCall(12000, () => {
+        this.time.delayedCall(10000, () => {
             this.tweens.add({
                 targets: this.openingTextContainer,
                 alpha: 0,
-                duration: 2000,
+                duration: 1500,
                 onComplete: () => {
                     this.showVillageScene();
                 }
@@ -452,8 +452,9 @@ export class IntroScene extends Phaser.Scene {
             callback: () => {
                 if (charIndex < fullText.length) {
                     textObj.setText(textObj.text + fullText[charIndex]);
+                    // Subtle typing sound
                     if (this.sound.get('hit')) {
-                        this.sound.play('hit', { volume: 0.03, rate: 2 });
+                        this.sound.play('hit', { volume: 0.02, rate: 2.5 });
                     }
                     charIndex++;
                 } else {
@@ -469,7 +470,7 @@ export class IntroScene extends Phaser.Scene {
         this.tweens.add({
             targets: this.blackOverlay,
             alpha: 0,
-            duration: 2000
+            duration: 1500
         });
         
         // Show cinematic bars
@@ -479,7 +480,7 @@ export class IntroScene extends Phaser.Scene {
         this.tweens.add({
             targets: [this.villageBackground, this.redMoon, this.clouds, this.bambooFence],
             alpha: 1,
-            duration: 3000
+            duration: 2500
         });
         
         // Fade in houses
@@ -488,8 +489,8 @@ export class IntroScene extends Phaser.Scene {
                 this.tweens.add({
                     targets: house,
                     alpha: 0.9,
-                    duration: 3000,
-                    delay: index * 200
+                    duration: 2500,
+                    delay: index * 150
                 });
             });
         }
@@ -502,16 +503,16 @@ export class IntroScene extends Phaser.Scene {
             this.tweens.add({
                 targets: lamp,
                 alpha: { from: 0, to: 0.8 },
-                duration: 2000,
-                delay: index * 300
+                duration: 1500,
+                delay: index * 250
             });
             
             // Continuous flicker
-            this.time.delayedCall(2000 + index * 300, () => {
+            this.time.delayedCall(1500 + index * 250, () => {
                 this.tweens.add({
                     targets: lamp,
                     alpha: { from: 0.6, to: 0.9 },
-                    duration: 800,
+                    duration: 700,
                     yoyo: true,
                     repeat: -1
                 });
@@ -522,14 +523,14 @@ export class IntroScene extends Phaser.Scene {
         this.tweens.add({
             targets: this.cameras.main,
             scrollX: { from: -2, to: 2 },
-            duration: 4000,
+            duration: 3500,
             yoyo: true,
             repeat: -1,
             ease: 'Sine.easeInOut'
         });
         
         // Wait then transition to Arka's house
-        this.time.delayedCall(5000, () => {
+        this.time.delayedCall(4500, () => {
             this.transitionToArkaHouse();
         });
     }
@@ -539,7 +540,7 @@ export class IntroScene extends Phaser.Scene {
         this.tweens.add({
             targets: [this.villageBackground, this.redMoon, this.clouds, this.bambooFence, ...this.houses, ...this.oilLamps],
             alpha: 0,
-            duration: 2000,
+            duration: 1500,
             onComplete: () => {
                 this.fogParticles.stop();
                 this.showArkaHouseInterior();
@@ -552,7 +553,7 @@ export class IntroScene extends Phaser.Scene {
         this.tweens.add({
             targets: [this.arkaHouseBackground, this.woodenWalls, this.keris, this.lanternGlow, this.arkaSleeping],
             alpha: 1,
-            duration: 2500
+            duration: 2000
         });
         
         // Flicker lantern
@@ -560,7 +561,7 @@ export class IntroScene extends Phaser.Scene {
             targets: this.lanternGlow,
             alpha: { from: 0.15, to: 0.25 },
             scale: { from: 0.95, to: 1.05 },
-            duration: 1200,
+            duration: 1000,
             yoyo: true,
             repeat: -1
         });
@@ -569,46 +570,46 @@ export class IntroScene extends Phaser.Scene {
         this.tweens.add({
             targets: this.arkaSleeping,
             scaleY: { from: 1, to: 1.02 },
-            duration: 2000,
+            duration: 1800,
             yoyo: true,
             repeat: -1,
             ease: 'Sine.easeInOut'
         });
         
-        // Wait 4 seconds then ATTACK!
-        this.time.delayedCall(4000, () => {
+        // Wait 3.5 seconds then ATTACK!
+        this.time.delayedCall(3500, () => {
             this.triggerVillageAttack();
         });
     }
 
     triggerVillageAttack() {
         // LOUD SCREAMS AND EXPLOSIONS
-        this.sound.play('boss', { volume: 1, rate: 0.7 });
+        this.sound.play('boss', { volume: 0.9, rate: 0.7 });
         
         // Violent lantern flicker
         this.tweens.add({
             targets: this.lanternGlow,
             alpha: { from: 0.3, to: 0 },
-            duration: 100,
+            duration: 80,
             yoyo: true,
-            repeat: 5
+            repeat: 6
         });
         
         // Camera shake
-        this.cameras.main.shake(800, 0.025);
+        this.cameras.main.shake(700, 0.02);
         
         // Red flash
-        const redFlash = this.add.rectangle(400, 300, 800, 600, 0xff0000, 0.6);
+        const redFlash = this.add.rectangle(640, 360, 1280, 720, 0xff0000, 0.5);
         redFlash.setDepth(500);
         this.tweens.add({
             targets: redFlash,
             alpha: 0,
-            duration: 400,
+            duration: 350,
             onComplete: () => redFlash.destroy()
         });
         
         // Arka wakes up shocked
-        this.time.delayedCall(600, () => {
+        this.time.delayedCall(500, () => {
             this.arkaWakesUp();
         });
     }
@@ -619,7 +620,7 @@ export class IntroScene extends Phaser.Scene {
             targets: this.arkaSleeping,
             y: 480,
             scaleY: 1.1,
-            duration: 150,
+            duration: 120,
             ease: 'Back.easeOut',
             onComplete: () => {
                 // Reset breathing animation
@@ -628,18 +629,18 @@ export class IntroScene extends Phaser.Scene {
         });
         
         // Show dialogue
-        this.time.delayedCall(800, () => {
-            this.showDialogue('ARKA', '...Apa itu...?');
+        this.time.delayedCall(700, () => {
+            this.showDialogue('ARKA', 'Suara apa itu...?');
             
-            this.time.delayedCall(2500, () => {
+            this.time.delayedCall(2200, () => {
                 this.hideDialogue();
                 
                 // Villager screaming outside
-                this.time.delayedCall(500, () => {
-                    this.showDialogue('PENDUDUK', 'LARI!! BATHARA KALA DATANG!!');
-                    this.sound.play('boss', { volume: 0.6, rate: 1.2 });
+                this.time.delayedCall(400, () => {
+                    this.showDialogue('PENDUDUK DESA', 'LARI!! BATHARA KALA TELAH BANGKIT!!');
+                    this.sound.play('boss', { volume: 0.6, rate: 1.3 });
                     
-                    this.time.delayedCall(3000, () => {
+                    this.time.delayedCall(2800, () => {
                         this.hideDialogue();
                         this.arkaGrabsKeris();
                     });
@@ -655,12 +656,12 @@ export class IntroScene extends Phaser.Scene {
             x: 620,
             y: 490,
             angle: -45,
-            duration: 300,
+            duration: 250,
             ease: 'Power2'
         });
         
         // Transition to burning village
-        this.time.delayedCall(1000, () => {
+        this.time.delayedCall(800, () => {
             this.transitionToBurningVillage();
         });
     }
@@ -670,7 +671,7 @@ export class IntroScene extends Phaser.Scene {
         this.tweens.add({
             targets: [this.arkaHouseBackground, this.woodenWalls, this.lanternGlow, this.arkaSleeping, this.keris],
             alpha: 0,
-            duration: 1500,
+            duration: 1200,
             onComplete: () => {
                 this.showBurningVillage();
             }
@@ -685,7 +686,7 @@ export class IntroScene extends Phaser.Scene {
         this.tweens.add({
             targets: burningBg,
             alpha: 1,
-            duration: 2000
+            duration: 1500
         });
         
         // Start fire, smoke, and ash particles
@@ -698,7 +699,7 @@ export class IntroScene extends Phaser.Scene {
             targets: this.cursedAura,
             alpha: 0.15,
             scale: { from: 0.8, to: 1.2 },
-            duration: 3000,
+            duration: 2500,
             yoyo: true,
             repeat: -1
         });
@@ -708,38 +709,38 @@ export class IntroScene extends Phaser.Scene {
             this.tweens.add({
                 targets: creature,
                 alpha: 0.7,
-                duration: 1000,
-                delay: index * 400
+                duration: 800,
+                delay: index * 350
             });
             
             // Move creatures
             this.tweens.add({
                 targets: creature,
                 x: creature.x + (index % 2 === 0 ? 150 : -150),
-                duration: 3000,
-                delay: index * 400,
+                duration: 2500,
+                delay: index * 350,
                 yoyo: true,
                 repeat: -1
             });
         });
         
         // Show tutorial
-        this.tutorialText.setText('[A] [D] MOVE    [SPACE] JUMP    [J] ATTACK    [F] SPECIAL\n[ESC] PAUSE');
+        this.tutorialText.setText('[A] [D] GERAK    [SPASI] LOMPAT    [KLIK KIRI] SERANG    [F] SERANGAN KHUSUS');
         this.tweens.add({
             targets: this.tutorialText,
             alpha: 1,
-            duration: 1500
+            duration: 1200
         });
         
         // Bathara Kala dialogue
-        this.time.delayedCall(3000, () => {
-            this.showDialogue('BATHARA KALA', 'MANUSIA...');
+        this.time.delayedCall(2500, () => {
+            this.showDialogue('BATHARA KALA', 'Manusia lemah...');
             this.sound.play('boss', { volume: 0.8, rate: 0.5 });
             
-            this.time.delayedCall(3000, () => {
-                this.showDialogue('BATHARA KALA', 'DESA INI AKAN LENYAP.');
+            this.time.delayedCall(2500, () => {
+                this.showDialogue('BATHARA KALA', 'Desa ini akan menjadi abu.');
                 
-                this.time.delayedCall(3500, () => {
+                this.time.delayedCall(3000, () => {
                     this.hideDialogue();
                     this.showBatharaKalaAppearance();
                 });
@@ -755,7 +756,7 @@ export class IntroScene extends Phaser.Scene {
         this.tweens.add({
             targets: darkOverlay,
             alpha: 0.6,
-            duration: 2000
+            duration: 1500
         });
         
         // Red moon glows brighter
@@ -765,16 +766,16 @@ export class IntroScene extends Phaser.Scene {
             targets: this.redMoon,
             scale: { from: 1, to: 1.3 },
             alpha: { from: 0.6, to: 0.9 },
-            duration: 2000
+            duration: 1500
         });
         
         // Giant silhouette appears
-        this.time.delayedCall(1500, () => {
+        this.time.delayedCall(1200, () => {
             this.bossGiantSilhouette.setAlpha(1);
             this.bossGiantSilhouette.setDepth(90);
             
             // Eyes open
-            this.time.delayedCall(800, () => {
+            this.time.delayedCall(700, () => {
                 this.bossLeftEye.setAlpha(1);
                 this.bossRightEye.setAlpha(1);
                 
@@ -783,7 +784,7 @@ export class IntroScene extends Phaser.Scene {
                     targets: [this.bossLeftEye, this.bossRightEye],
                     alpha: { from: 0.7, to: 1 },
                     scale: { from: 0.9, to: 1.3 },
-                    duration: 1000,
+                    duration: 900,
                     yoyo: true,
                     repeat: -1
                 });
@@ -792,7 +793,7 @@ export class IntroScene extends Phaser.Scene {
                 this.sound.play('boss', { volume: 1, rate: 0.4 });
                 
                 // Massive camera shake
-                this.cameras.main.shake(1000, 0.04);
+                this.cameras.main.shake(900, 0.035);
                 
                 // Wind explosion effect
                 const windExplosion = this.add.circle(640, 250, 60, 0x00ff00, 0.3);
@@ -803,13 +804,13 @@ export class IntroScene extends Phaser.Scene {
                     targets: windExplosion,
                     scale: 18,
                     alpha: 0,
-                    duration: 1500,
+                    duration: 1300,
                     ease: 'Power2',
                     onComplete: () => windExplosion.destroy()
                 });
                 
                 // Show boss introduction text
-                this.time.delayedCall(1500, () => {
+                this.time.delayedCall(1300, () => {
                     this.showBossIntroduction();
                 });
             });
@@ -818,27 +819,27 @@ export class IntroScene extends Phaser.Scene {
 
     showBossIntroduction() {
         this.bossIntroText.setText('BATHARA KALA');
-        this.bossSubtitleText.setText('THE DEVOURER OF SOULS');
+        this.bossSubtitleText.setText('Pemangsa Jiwa');
         
         this.tweens.add({
             targets: this.bossIntroText,
             alpha: 1,
             scale: { from: 0.5, to: 1 },
-            duration: 1500,
+            duration: 1200,
             ease: 'Back.easeOut'
         });
         
-        this.time.delayedCall(500, () => {
+        this.time.delayedCall(400, () => {
             this.tweens.add({
                 targets: this.bossSubtitleText,
                 alpha: 1,
-                duration: 1000
+                duration: 800
             });
         });
         
         // Lightning flashes
         this.time.addEvent({
-            delay: 1500,
+            delay: 1200,
             callback: () => {
                 const lightning = this.add.rectangle(640, 360, 1280, 720, 0xffffff, 0.4);
                 lightning.setDepth(150);
@@ -846,7 +847,7 @@ export class IntroScene extends Phaser.Scene {
                 this.tweens.add({
                     targets: lightning,
                     alpha: 0,
-                    duration: 150,
+                    duration: 120,
                     onComplete: () => lightning.destroy()
                 });
             },
@@ -854,7 +855,7 @@ export class IntroScene extends Phaser.Scene {
         });
         
         // Wait then start game
-        this.time.delayedCall(5000, () => {
+        this.time.delayedCall(4500, () => {
             this.startGame();
         });
     }
@@ -872,11 +873,14 @@ export class IntroScene extends Phaser.Scene {
         // Change portrait color based on character
         if (character === 'ARKA') {
             this.portrait.setFillStyle(0x4a3020);
+            this.characterNameBox.setFillStyle(0x8b4513);
         } else if (character === 'BATHARA KALA') {
             this.portrait.setFillStyle(0x000000);
             this.portrait.setStrokeStyle(3, 0x00ff00);
-        } else if (character === 'PENDUDUK') {
+            this.characterNameBox.setFillStyle(0x1a0a0a);
+        } else if (character === 'PENDUDUK DESA') {
             this.portrait.setFillStyle(0x6a5040);
+            this.characterNameBox.setFillStyle(0x8b4513);
         }
         
         // Type writer effect
@@ -884,12 +888,12 @@ export class IntroScene extends Phaser.Scene {
         let charIndex = 0;
         
         const typeTimer = this.time.addEvent({
-            delay: 60,
+            delay: 50,
             callback: () => {
                 if (charIndex < text.length) {
                     this.dialogueText.setText(this.dialogueText.text + text[charIndex]);
                     // Play typing sound
-                    this.sound.play('hit', { volume: 0.08, rate: 1.8 });
+                    this.sound.play('hit', { volume: 0.06, rate: 2 });
                     charIndex++;
                 } else {
                     typeTimer.remove();
