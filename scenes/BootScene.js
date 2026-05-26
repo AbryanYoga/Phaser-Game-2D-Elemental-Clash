@@ -59,8 +59,13 @@ export class BootScene extends Phaser.Scene {
         this.load.image('boss_dead_2', 'assets/bathara kala/dead_2boss.png');
         this.load.image('boss_dead_3', 'assets/bathara kala/dead_3boss.png');
 
-        // Map
-        this.load.image('background', 'assets/map/arena.png');
+        // Map - Throne Room
+        this.load.image('background', 'assets/map/2/throne room.png');
+        this.load.image('map_layer_1', 'assets/map/2/1.png');
+        this.load.image('map_layer_2', 'assets/map/2/2.png');
+        this.load.image('map_layer_3', 'assets/map/2/3.png');
+        this.load.image('map_layer_4', 'assets/map/2/4.png');
+        this.load.image('platform', 'assets/map/2/5.png');
 
         // UI
         this.load.image('hp_player', 'assets/ui/hp_player.png');

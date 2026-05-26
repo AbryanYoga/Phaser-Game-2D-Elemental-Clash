@@ -30,26 +30,9 @@ export class GameOverScene extends Phaser.Scene {
             fontStyle: 'bold'
         }).setOrigin(0.5);
 
-        // Retry Button
-        const retryBtn = this.add.text(640, 450, 'RETRY', {
-            fontSize: '36px',
-            fill: '#ffffff',
-            fontStyle: 'bold',
-            stroke: '#000',
-            strokeThickness: 4
-        })
-        .setOrigin(0.5)
-        .setInteractive({ useHandCursor: true })
-        .on('pointerover', () => retryBtn.setStyle({ fill: isVictory ? '#ffff00' : '#ff0000' }))
-        .on('pointerout', () => retryBtn.setStyle({ fill: '#ffffff' }))
-        .on('pointerdown', () => {
-            this.sound.stopAll();
-            this.scene.start('BattleScene');
-        });
-
-        // Main Menu Button
-        const menuBtn = this.add.text(640, 530, 'MAIN MENU', {
-            fontSize: '36px',
+        // Main Menu Button (centered, no retry)
+        const menuBtn = this.add.text(640, 450, 'MAIN MENU', {
+            fontSize: '40px',
             fill: '#ffffff',
             fontStyle: 'bold',
             stroke: '#000',

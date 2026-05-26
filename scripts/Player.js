@@ -32,7 +32,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.body.setSize(60, 100);
         this.body.setOffset(35, 28);
         this.body.setBounce(0, 0);
-        this.body.setGravityY(-1200); // Counter world gravity
         this.setScale(1.2);
         this.setCollideWorldBounds(true);
 
@@ -109,7 +108,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             console.log('[Player] Created: idle');
         }
 
-        // RUN - 6 frames, looping at 15 FPS
+        // RUN - 6 frames, looping at 18 FPS (SMOOTH!)
         // Force remove if exists (cache issue)
         if (anims.exists('run')) {
             anims.remove('run');
@@ -126,10 +125,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 { key: 'player_run_5' },
                 { key: 'player_run_6' }
             ],
-            frameRate: 15,
+            frameRate: 18,
             repeat: -1
         });
-        console.log('[Player] Created: run (6 frames, 15 FPS)');
+        console.log('[Player] Created: run (6 frames, 18 FPS - SMOOTH)');
 
         // JUMP - 4 frames, NO REPEAT
         if (!anims.exists('jump')) {
@@ -293,8 +292,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         // ===== MOVEMENT INPUT =====
         let isMoving = false;
-        const maxSpeed = 300;
-        const acceleration = 35;
+        const maxSpeed = 350;  // Increased for smoother run
+        const acceleration = 40;  // Faster acceleration
 
         if (keys.A.isDown) {
             const newVelX = Math.max(this.body.velocity.x - acceleration, -maxSpeed);
@@ -312,7 +311,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         // ===== JUMP INPUT =====
         if (Phaser.Input.Keyboard.JustDown(keys.SPACE) && onGround) {
-            this.setVelocityY(-550);
+            this.setVelocityY(-500);
             this.changeAnimation('jump');
             this.playSound('jump', { volume: 0.4 });
         }

@@ -7,71 +7,79 @@ export class BattleScene extends Phaser.Scene {
     }
 
     create() {
-    // Background
+    // =========================================
+    // BACKGROUND - THRONE ROOM LAYERS
+    // =========================================
+    
+    // Throne room background
     this.add.image(640, 360, 'background')
         .setDisplaySize(1280, 720)
         .setScrollFactor(0);
-
-    // =========================================
-    // GROUND
-    // =========================================
-
-    // Posisi atas tembok batu
-    const groundY = 520;
-
-    // Visual ground
-    const groundGraphics = this.add.graphics();
-
-    // Batu gelap
-    groundGraphics.fillStyle(0x2b2b2b, 1);
-    groundGraphics.fillRect(0, groundY, 1280, 200);
-
-    // Garis batu horizontal
-    groundGraphics.lineStyle(2, 0x1a1a1a, 1);
-
-    for (let y = groundY; y < 720; y += 40) {
-        groundGraphics.lineBetween(0, y, 1280, y);
-    }
-
-    // Garis batu vertikal acak
-    for (let x = 0; x < 1280; x += 80) {
-        groundGraphics.lineBetween(x, groundY, x, 720);
-    }
-
-    // =========================================
-    // PHYSICS GROUND - PLATFORM SOLID
-    // =========================================
-
-    // Ground collider - TEPAT di bawah visual ground
-    this.ground = this.add.rectangle(640, groundY + 5, 1280, 20, 0x000000, 0);
-    this.physics.add.existing(this.ground, true);
     
-    // Debug: Show platform (hapus setelah fix)
-    // this.ground.setFillStyle(0xff0000, 0.3);
+    // Layer 1 (paling belakang)
+    this.add.image(640, 360, 'map_layer_1')
+        .setDisplaySize(1280, 720)
+        .setScrollFactor(0.1);
+    
+    // Layer 2
+    this.add.image(640, 360, 'map_layer_2')
+        .setDisplaySize(1280, 720)
+        .setScrollFactor(0.3);
+    
+    // Layer 3
+    this.add.image(640, 360, 'map_layer_3')
+        .setDisplaySize(1280, 720)
+        .setScrollFactor(0.5);
+    
+    // Layer 4
+    this.add.image(640, 360, 'map_layer_4')
+        .setDisplaySize(1280, 720)
+        .setScrollFactor(0.7);
+
+    // =========================================
+    // PLATFORM - GAMBAR 5 SEBAGAI PIJAKAN
+    // =========================================
+    
+    const platformY = 640;  // Posisi Y karakter (pas dengan 5.png)
+    
+    // Visual platform (gambar 5) - positioned lower
+    this.add.image(640, 600, 'platform')
+        .setDisplaySize(1280, 200)
+        .setOrigin(0.5, 0);  // Origin di atas
+    
+    // Physics platform - untuk collision detection
+    this.ground = this.physics.add.staticGroup();
+    this.ground.create(640, platformY, 'platform')
+        .setDisplaySize(1280, 40)
+        .setOrigin(0.5, 0)
+        .setAlpha(0)  // Invisible
+        .refreshBody();
 
     // =========================================
     // PLAYER
     // =========================================
 
-    // Spawn di atas ground
-    this.player = new Player(this, 250, groundY);
+    // Spawn di platform (di atas 5.png)
+    this.player = new Player(this, 250, platformY);
     
-    // Gravity counter untuk mencegah jatuh
-    this.player.body.setGravityY(-1200);
+    // Gravity counter agar tidak jatuh
+    this.player.body.setGravityY(-800);
 
     // =========================================
     // BOSS
     // =========================================
 
-    this.boss = new Boss(this, 1000, groundY);
+    // Spawn di platform (di atas 5.png)
+    this.boss = new Boss(this, 1000, platformY);
     
-    // Gravity counter untuk mencegah jatuh
-    this.boss.body.setGravityY(-1200);
+    // Gravity counter agar tidak jatuh
+    this.boss.body.setGravityY(-800);
 
     // =========================================
     // COLLISION
     // =========================================
 
+    // Simple collider - karakter berdiri di platform
     this.physics.add.collider(this.player, this.ground);
     this.physics.add.collider(this.boss, this.ground);
 
@@ -81,8 +89,8 @@ export class BattleScene extends Phaser.Scene {
 
     this.physics.world.setBounds(0, 0, 1280, 720);
 
-    // Gravity
-    this.physics.world.gravity.y = 1200;
+    // Gravity - normal untuk jump yang bekerja
+    this.physics.world.gravity.y = 800;
 
     // =========================================
     // CONTROLS

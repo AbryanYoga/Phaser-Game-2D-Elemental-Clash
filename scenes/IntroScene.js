@@ -11,6 +11,7 @@ export class IntroScene extends Phaser.Scene {
         this.canSkip = false;
         this.isDialogueActive = false;
         this.cinematicBarsVisible = false;
+        this.isSkipping = false;  // Flag to prevent double ESC trigger
         
         // Create all visual elements
         this.createVisuals();
@@ -22,9 +23,10 @@ export class IntroScene extends Phaser.Scene {
             this.startCutscene();
         });
         
-        // Skip cutscene with ESC
-        this.input.keyboard.on('keydown-ESC', () => {
-            if (this.canSkip) {
+        // Skip cutscene with ESC - FIXED: prevent double trigger
+        this.escKey = this.input.keyboard.addKey('ESC');
+        this.escKey.on('down', () => {
+            if (this.canSkip && !this.isSkipping) {
                 this.skipToGame();
             }
         });
@@ -911,6 +913,10 @@ export class IntroScene extends Phaser.Scene {
     }
 
     startGame() {
+        // Prevent multiple calls
+        if (this.isSkipping) return;
+        this.isSkipping = true;
+        
         // Hide tutorial
         this.tweens.add({
             targets: this.tutorialText,
@@ -918,29 +924,36 @@ export class IntroScene extends Phaser.Scene {
             duration: 1000
         });
         
-        // Fade to black
-        this.tweens.add({
-            targets: this.blackOverlay,
-            alpha: 1,
-            duration: 2000,
-            onComplete: () => {
-                // Stop all particles
-                this.fireParticles.stop();
-                this.darkSmoke.stop();
-                this.ashParticles.stop();
-                this.fogParticles.stop();
-                
-                // Stop camera effects
-                this.cameras.main.stopFollow();
-                this.cameras.main.setScroll(0, 0);
-                
-                // Start battle scene
-                this.scene.start('BattleScene');
-            }
+        // Remove ESC key listener
+        if (this.escKey) {
+            this.escKey.off('down');
+            this.escKey.destroy();
+        }
+        
+        // Fade to black using camera
+        this.cameras.main.fadeOut(1000, 0, 0, 0);
+        
+        this.cameras.main.once('camerafadeoutcomplete', () => {
+            // Stop all particles
+            if (this.fireParticles) this.fireParticles.stop();
+            if (this.darkSmoke) this.darkSmoke.stop();
+            if (this.ashParticles) this.ashParticles.stop();
+            if (this.fogParticles) this.fogParticles.stop();
+            
+            // Stop camera effects
+            this.cameras.main.stopFollow();
+            this.cameras.main.setScroll(0, 0);
+            
+            // Start battle scene
+            this.scene.start('BattleScene');
         });
     }
 
     skipToGame() {
+        // Prevent multiple calls
+        if (this.isSkipping) return;
+        this.isSkipping = true;
+        
         // Stop all tweens and timers
         this.tweens.killAll();
         this.time.removeAllEvents();
@@ -955,14 +968,17 @@ export class IntroScene extends Phaser.Scene {
         this.cameras.main.stopFollow();
         this.cameras.main.setScroll(0, 0);
         
+        // Remove ESC key listener to prevent double trigger
+        if (this.escKey) {
+            this.escKey.off('down');
+            this.escKey.destroy();
+        }
+        
         // Fade to black quickly
-        this.tweens.add({
-            targets: this.blackOverlay,
-            alpha: 1,
-            duration: 500,
-            onComplete: () => {
-                this.scene.start('BattleScene');
-            }
+        this.cameras.main.fadeOut(500, 0, 0, 0);
+        
+        this.cameras.main.once('camerafadeoutcomplete', () => {
+            this.scene.start('BattleScene');
         });
     }
 }
