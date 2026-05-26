@@ -15,11 +15,11 @@ export class MenuScene extends Phaser.Scene {
 
     create() {
         // Set background (map/arena.png)
-        this.add.image(400, 300, 'background').setAlpha(0.6).setDisplaySize(800, 600);
+        this.add.image(640, 360, 'background').setAlpha(0.6).setDisplaySize(1280, 720);
 
         // Title text
-        this.titleText = this.add.text(400, 150, 'DARK FANTASY\nBOSS FIGHT', {
-            fontSize: '64px',
+        this.titleText = this.add.text(640, 200, 'DARK FANTASY\nBOSS FIGHT', {
+            fontSize: '80px',
             fill: '#e63946',
             align: 'center',
             fontStyle: 'bold',
@@ -41,12 +41,12 @@ export class MenuScene extends Phaser.Scene {
         // Slow cinematic smoke/fog overlay
         this.fog = this.add.graphics();
         this.fog.fillStyle(0x0a001a, 0.25);
-        this.fog.fillRect(0, 0, 800, 600);
+        this.fog.fillRect(0, 0, 1280, 720);
         
         // Dynamic red pulsing light aura from bottom
         this.aura = this.add.graphics();
         this.aura.fillStyle(0x9d0208, 0.15);
-        this.aura.fillRect(0, 500, 800, 100);
+        this.aura.fillRect(0, 600, 1280, 120);
         
         this.tweens.add({
             targets: this.aura,
@@ -59,8 +59,8 @@ export class MenuScene extends Phaser.Scene {
 
     createMainMenu() {
         const createMenuBtn = (y, label, callback) => {
-            const btn = this.add.text(400, y, label, {
-                fontSize: '32px',
+            const btn = this.add.text(640, y, label, {
+                fontSize: '40px',
                 fill: '#ffffff',
                 fontStyle: 'bold',
                 stroke: '#000000',
@@ -76,15 +76,19 @@ export class MenuScene extends Phaser.Scene {
             return btn;
         };
 
-        createMenuBtn(300, 'START GAME', () => {
+        createMenuBtn(350, 'START STORY', () => {
+            this.scene.start('IntroScene');
+        });
+
+        createMenuBtn(430, 'SKIP TO BATTLE', () => {
             this.scene.start('BattleScene');
         });
 
-        createMenuBtn(380, 'SETTINGS', () => {
+        createMenuBtn(510, 'SETTINGS', () => {
             this.showSettings(true);
         });
 
-        createMenuBtn(460, 'EXIT', () => {
+        createMenuBtn(590, 'EXIT', () => {
             if (confirm('Exit game?')) {
                 // Try window close
                 window.close();

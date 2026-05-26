@@ -7,106 +7,248 @@ export class BattleScene extends Phaser.Scene {
     }
 
     create() {
-        // World setup
-        this.add.image(400, 300, 'background').setScrollFactor(0.2);
-        
-        // Ground (Invisible but physics-enabled)
-        this.ground = this.add.rectangle(400, 550, 800, 100, 0x000000, 0);
-        this.physics.add.existing(this.ground, true);
+    // Background
+    this.add.image(640, 360, 'background')
+        .setDisplaySize(1280, 720)
+        .setScrollFactor(0);
 
-        // Characters
-        this.player = new Player(this, 100, 450);
-        this.boss = new Boss(this, 700, 450);
+    // =========================================
+    // GROUND
+    // =========================================
 
-        // Physics
-        this.physics.add.collider(this.player, this.ground);
-        this.physics.add.collider(this.boss, this.ground);
+    // Posisi atas tembok batu
+    const groundY = 520;
 
-        // Controls
-        this.cursors = this.input.keyboard.createCursorKeys();
-        this.keys = this.input.keyboard.addKeys('A,D,SPACE,J');
+    // Visual ground
+    const groundGraphics = this.add.graphics();
 
-        // UI
-        this.createUI();
+    // Batu gelap
+    groundGraphics.fillStyle(0x2b2b2b, 1);
+    groundGraphics.fillRect(0, groundY, 1280, 200);
 
-        // Particles & Visual Effects
-        this.createEffects();
+    // Garis batu horizontal
+    groundGraphics.lineStyle(2, 0x1a1a1a, 1);
 
-        // Camera
-        this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
-        this.cameras.main.setZoom(1.2);
-        this.cameras.main.setBounds(0, 0, 800, 600);
-
-        // BGM
-        this.sound.play('bgm', { loop: true, volume: 0.3 });
-
-        // Intro Cinematic
-        this.introCinematic();
+    for (let y = groundY; y < 720; y += 40) {
+        groundGraphics.lineBetween(0, y, 1280, y);
     }
+
+    // Garis batu vertikal acak
+    for (let x = 0; x < 1280; x += 80) {
+        groundGraphics.lineBetween(x, groundY, x, 720);
+    }
+
+    // =========================================
+    // PHYSICS GROUND - PLATFORM SOLID
+    // =========================================
+
+    // Ground collider - tepat di bawah karakter
+    this.ground = this.add.rectangle(640, groundY + 60, 1280, 120, 0x000000, 0);
+    this.physics.add.existing(this.ground, true);
+
+    // =========================================
+    // PLAYER
+    // =========================================
+
+    // Spawn di atas ground
+    this.player = new Player(this, 250, groundY - 10);
+    
+    // Disable gravity untuk player
+    this.player.body.setGravityY(-1200);
+
+    // =========================================
+    // BOSS
+    // =========================================
+
+    this.boss = new Boss(this, 1000, groundY - 20);
+    
+    // Disable gravity untuk boss
+    this.boss.body.setGravityY(-1200);
+
+    // =========================================
+    // COLLISION
+    // =========================================
+
+    this.physics.add.collider(this.player, this.ground);
+    this.physics.add.collider(this.boss, this.ground);
+
+    // =========================================
+    // WORLD
+    // =========================================
+
+    this.physics.world.setBounds(0, 0, 1280, 720);
+
+    // Gravity
+    this.physics.world.gravity.y = 1200;
+
+    // =========================================
+    // CONTROLS
+    // =========================================
+
+    this.cursors = this.input.keyboard.createCursorKeys();
+    this.keys = this.input.keyboard.addKeys('A,D,SPACE,J,F,K');
+
+    // =========================================
+    // UI
+    // =========================================
+
+    this.createUI();
+    this.createEffects();
+
+    // =========================================
+    // CAMERA
+    // =========================================
+
+    this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
+
+    this.cameras.main.setZoom(1);
+
+    this.cameras.main.setBounds(0, 0, 1280, 720);
+
+    // =========================================
+    // BGM
+    // =========================================
+
+    if (!this.sound.get('bgm')) {
+        this.sound.play('bgm', {
+            loop: true,
+            volume: 0.3
+        });
+    }
+
+    // =========================================
+    // INTRO
+    // =========================================
+
+    this.introCinematic();
+}
 
     createUI() {
         // Player HP Bar
         this.playerHPBg = this.add.graphics();
         this.playerHPBg.fillStyle(0x000000, 0.5);
-        this.playerHPBg.fillRect(20, 20, 200, 20).setScrollFactor(0);
+        this.playerHPBg.fillRect(30, 30, 300, 30).setScrollFactor(0);
         
         this.playerHPBar = this.add.graphics();
         this.updatePlayerHPBar();
 
-        this.add.text(20, 45, 'HERO', { fontSize: '16px', fill: '#fff' }).setScrollFactor(0);
+        this.add.text(30, 65, 'ARKA', { fontSize: '20px', fill: '#fff', fontStyle: 'bold' }).setScrollFactor(0);
+        
+        // Damage taken indicator
+        this.damageIndicator = this.add.text(180, 65, '', {
+            fontSize: '18px',
+            fill: '#ff0000',
+            fontStyle: 'bold'
+        }).setOrigin(0.5).setScrollFactor(0).setAlpha(0);
+
+        // Special Attack Cooldown Bar
+        this.specialCDBg = this.add.graphics();
+        this.specialCDBg.fillStyle(0x000000, 0.5);
+        this.specialCDBg.fillRect(30, 100, 250, 20).setScrollFactor(0);
+        
+        this.specialCDBar = this.add.graphics();
+        
+        this.specialCDText = this.add.text(30, 125, 'Special [F/K]', { 
+            fontSize: '16px', 
+            fill: '#ffaa00',
+            fontStyle: 'bold'
+        }).setScrollFactor(0);
 
         // Boss HP Bar
         this.bossHPBg = this.add.graphics();
         this.bossHPBg.fillStyle(0x000000, 0.5);
-        this.bossHPBg.fillRect(580, 20, 200, 20).setScrollFactor(0);
+        this.bossHPBg.fillRect(950, 30, 300, 30).setScrollFactor(0);
         
         this.bossHPBar = this.add.graphics();
         this.updateBossHPBar();
 
-        this.add.text(730, 45, 'BOSS', { fontSize: '16px', fill: '#f00' }).setScrollFactor(0);
+        this.add.text(1000, 65, 'BATHARA KALA', { fontSize: '18px', fill: '#f00', fontStyle: 'bold' }).setScrollFactor(0);
     }
 
     updatePlayerHPBar() {
         this.playerHPBar.clear();
-        this.playerHPBar.fillStyle(0x00ff00, 1);
-        const width = (this.player.hp / this.player.maxHp) * 200;
-        this.playerHPBar.fillRect(20, 20, Math.max(0, width), 20).setScrollFactor(0);
+        
+        // HP bar color based on health percentage
+        const hpPercent = this.player.hp / this.player.maxHp;
+        let barColor = 0x00ff00; // Green
+        if (hpPercent < 0.3) {
+            barColor = 0xff0000; // Red
+        } else if (hpPercent < 0.6) {
+            barColor = 0xffaa00; // Orange
+        }
+        
+        this.playerHPBar.fillStyle(barColor, 1);
+        const width = hpPercent * 300;
+        this.playerHPBar.fillRect(30, 30, Math.max(0, width), 30).setScrollFactor(0);
+        
+        // Add HP text
+        if (!this.playerHPText) {
+            this.playerHPText = this.add.text(180, 45, '', {
+                fontSize: '16px',
+                fill: '#fff',
+                fontStyle: 'bold'
+            }).setOrigin(0.5).setScrollFactor(0);
+        }
+        this.playerHPText.setText(`${Math.max(0, Math.floor(this.player.hp))}/${this.player.maxHp}`);
+    }
+
+    updateSpecialCDBar() {
+        this.specialCDBar.clear();
+        const percent = this.player.getSpecialCooldownPercent();
+        
+        if (percent >= 1) {
+            this.specialCDBar.fillStyle(0xffaa00, 1);
+            this.specialCDText.setColor('#ffaa00');
+            this.specialCDText.setText('Special [F/K] READY!');
+        } else {
+            this.specialCDBar.fillStyle(0x666666, 1);
+            this.specialCDText.setColor('#888888');
+            const timeLeft = Math.ceil(this.player.specialCooldown / 1000);
+            this.specialCDText.setText(`Special [F/K] ${timeLeft}s`);
+        }
+        
+        const width = percent * 250;
+        this.specialCDBar.fillRect(30, 100, Math.max(0, width), 20).setScrollFactor(0);
     }
 
     updateBossHPBar() {
         this.bossHPBar.clear();
-        this.bossHPBar.fillStyle(0xff0000, 1);
-        const width = (this.boss.hp / this.boss.maxHp) * 200;
-        this.bossHPBar.fillRect(580, 20, Math.max(0, width), 20).setScrollFactor(0);
+        
+        // Boss HP bar color based on health
+        const hpPercent = this.boss.hp / this.boss.maxHp;
+        let barColor = 0xff0000; // Red
+        if (hpPercent < 0.3) {
+            barColor = 0xff6600; // Dark orange when low
+        }
+        
+        this.bossHPBar.fillStyle(barColor, 1);
+        const width = hpPercent * 300;
+        this.bossHPBar.fillRect(950, 30, Math.max(0, width), 30).setScrollFactor(0);
+        
+        // Add Boss HP text
+        if (!this.bossHPText) {
+            this.bossHPText = this.add.text(1100, 45, '', {
+                fontSize: '16px',
+                fill: '#fff',
+                fontStyle: 'bold'
+            }).setOrigin(0.5).setScrollFactor(0);
+        }
+        this.bossHPText.setText(`${Math.max(0, Math.floor(this.boss.hp))}/${this.boss.maxHp}`);
     }
 
     createEffects() {
-        // Fire/Ember particles
-        this.particles = this.add.particles(0, 0, 'particle', {
-            x: { min: 0, max: 800 },
-            y: 600,
-            speedY: { min: -100, max: -200 },
-            speedX: { min: -50, max: 50 },
-            scale: { start: 0.1, end: 0 },
-            alpha: { start: 1, end: 0 },
-            lifespan: 2000,
-            frequency: 100,
-            tint: 0xff4400,
-            blendMode: 'ADD'
-        });
-
-        // Fog overlay
+        // Fog overlay only
         this.fog = this.add.graphics();
         this.fog.fillStyle(0x000000, 0.2);
-        this.fog.fillRect(0, 0, 800, 600).setScrollFactor(0);
+        this.fog.fillRect(0, 0, 1280, 720).setScrollFactor(0);
     }
 
     introCinematic() {
         this.player.active = false;
         this.boss.active = false;
         
-        const introText = this.add.text(400, 300, 'THE GUARDIAN AWAKES', {
-            fontSize: '48px',
+        const introText = this.add.text(640, 360, 'BATHARA KALA AWAKENS', {
+            fontSize: '64px',
             fill: '#ff0000',
             fontStyle: 'bold'
         }).setOrigin(0.5).setAlpha(0).setScrollFactor(0);
@@ -134,18 +276,39 @@ export class BattleScene extends Phaser.Scene {
         }
 
         this.updatePlayerHPBar();
+        this.updateSpecialCDBar();
         this.updateBossHPBar();
     }
 
-    checkPlayerAttack() {
+    checkPlayerAttack(damage = 35, isSpecial = false) {
         // Simple distance and facing check
         const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.boss.x, this.boss.y);
         const facingBoss = (this.player.flipX && this.player.x > this.boss.x) || (!this.player.flipX && this.player.x < this.boss.x);
+
+        if (isSpecial) {
+            damage = 35;
+        } else {
+            damage = 20;
+        }
         
-        if (dist < 150 && facingBoss) {
-            this.boss.takeDamage(10);
-            this.showDamageText(this.boss.x, this.boss.y - 50, '10');
-            this.createSlashEffect(this.boss.x, this.boss.y);
+        const range = isSpecial ? 180 : 150;
+        
+        if (dist < range && facingBoss) {
+            // Critical hit chance (15%)
+            const isCritical = !isSpecial && Math.random() < 0.15;
+            let finalDamage = damage;
+            let damageColor = '#ffffff';
+            
+            if (isSpecial) {
+                damageColor = '#ff4400'; // Red for special
+            } else if (isCritical) {
+                finalDamage = Math.floor(damage * 1.5);
+                damageColor = '#ffff00'; // Yellow for critical
+            }
+            
+            this.boss.takeDamage(finalDamage);
+            this.showDamageText(this.boss.x, this.boss.y - 50, finalDamage.toString(), damageColor, isCritical || isSpecial);
+            this.createSlashEffect(this.boss.x, this.boss.y, isSpecial || isCritical);
         }
     }
 
@@ -153,38 +316,77 @@ export class BattleScene extends Phaser.Scene {
         const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.boss.x, this.boss.y);
         if (dist < 200) {
             this.player.takeDamage(damage);
-            this.showDamageText(this.player.x, this.player.y - 50, damage.toString(), '#ff0000');
+            // Show damage with bigger, more visible text
+            this.showDamageText(this.player.x, this.player.y - 80, `-${damage}`, '#ff0000', true);
+            
+            // Flash damage indicator in UI
+            this.damageIndicator.setText(`-${damage} HP!`);
+            this.damageIndicator.setAlpha(1);
+            this.tweens.add({
+                targets: this.damageIndicator,
+                alpha: 0,
+                duration: 1000,
+                ease: 'Power2'
+            });
+            
+            // Blood effect removed - too distracting
         }
     }
 
-    showDamageText(x, y, text, color = '#ffffff') {
+    showDamageText(x, y, text, color = '#ffffff', isBig = false) {
         const dmgText = this.add.text(x, y, text, {
-            fontSize: '24px',
+            fontSize: isBig ? '32px' : '24px',
             fill: color,
             fontStyle: 'bold',
             stroke: '#000',
-            strokeThickness: 4
+            strokeThickness: isBig ? 6 : 4
         }).setOrigin(0.5);
 
         this.tweens.add({
             targets: dmgText,
-            y: y - 50,
+            y: y - (isBig ? 70 : 50),
             alpha: 0,
-            duration: 800,
+            duration: isBig ? 1000 : 800,
+            ease: 'Power2',
             onComplete: () => dmgText.destroy()
         });
     }
 
-    createSlashEffect(x, y) {
-        const slash = this.add.sprite(x, y, 'particle');
-        slash.setScale(2);
-        slash.setTint(0xffffff);
+    createSlashEffect(x, y, isSpecial = false) {
+        // Simple flash effect without particles
+        const flash = this.add.graphics();
+        flash.fillStyle(isSpecial ? 0xffaa00 : 0xffffff, isSpecial ? 0.8 : 0.6);
+        flash.fillCircle(x, y, isSpecial ? 60 : 40);
+        
         this.tweens.add({
-            targets: slash,
-            scaleX: 0,
+            targets: flash,
             alpha: 0,
-            duration: 200,
-            onComplete: () => slash.destroy()
+            duration: isSpecial ? 300 : 200,
+            onComplete: () => flash.destroy()
         });
+    }
+    
+    showGameOver(result) {
+        // Fade out
+        this.cameras.main.fadeOut(1000, 0, 0, 0);
+        
+        this.cameras.main.once('camerafadeoutcomplete', () => {
+            this.sound.stopAll();
+            this.scene.start('GameOverScene', { 
+                result: result === 'victory' ? 'VICTORY' : 'DEFEAT'
+            });
+        });
+    }
+    
+    playSound(key, config = {}) {
+        if (this.registry.get('sfxEnabled') !== false) {
+            try {
+                if (this.sound.get(key)) {
+                    this.sound.play(key, config);
+                }
+            } catch (e) {
+                console.warn('Sound not found:', key);
+            }
+        }
     }
 }

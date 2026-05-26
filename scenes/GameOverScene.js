@@ -4,44 +4,67 @@ export class GameOverScene extends Phaser.Scene {
     }
 
     init(data) {
-        this.result = data.result || 'GAME OVER';
+        this.result = data.result || 'DEFEAT';
     }
 
     create() {
-        this.add.image(400, 300, 'background').setAlpha(0.3);
+        // Dark background
+        this.add.rectangle(640, 360, 1280, 720, 0x000000, 0.8);
 
-        const title = this.add.text(400, 250, this.result, {
+        const isVictory = this.result === 'VICTORY';
+        
+        // Title
+        const title = this.add.text(640, 250, this.result, {
             fontSize: '80px',
-            fill: this.result === 'YOU DIED' ? '#ff0000' : '#ffff00',
+            fill: isVictory ? '#ffff00' : '#ff0000',
             fontStyle: 'bold',
             stroke: '#000',
             strokeThickness: 8
         }).setOrigin(0.5);
-
-        const retryBtn = this.add.text(400, 400, 'RETRY', {
+        
+        // Subtitle
+        const subtitle = this.add.text(640, 340, 
+            isVictory ? 'Bathara Kala Defeated!' : 'Arka Has Fallen...', {
             fontSize: '32px',
-            fill: '#ffffff'
+            fill: '#ffffff',
+            fontStyle: 'bold'
+        }).setOrigin(0.5);
+
+        // Retry Button
+        const retryBtn = this.add.text(640, 450, 'RETRY', {
+            fontSize: '36px',
+            fill: '#ffffff',
+            fontStyle: 'bold',
+            stroke: '#000',
+            strokeThickness: 4
         })
         .setOrigin(0.5)
         .setInteractive({ useHandCursor: true })
-        .on('pointerover', () => retryBtn.setStyle({ fill: '#ff0000' }))
+        .on('pointerover', () => retryBtn.setStyle({ fill: isVictory ? '#ffff00' : '#ff0000' }))
         .on('pointerout', () => retryBtn.setStyle({ fill: '#ffffff' }))
         .on('pointerdown', () => {
             this.sound.stopAll();
             this.scene.start('BattleScene');
         });
 
-        const menuBtn = this.add.text(400, 470, 'MAIN MENU', {
-            fontSize: '32px',
-            fill: '#ffffff'
+        // Main Menu Button
+        const menuBtn = this.add.text(640, 530, 'MAIN MENU', {
+            fontSize: '36px',
+            fill: '#ffffff',
+            fontStyle: 'bold',
+            stroke: '#000',
+            strokeThickness: 4
         })
         .setOrigin(0.5)
         .setInteractive({ useHandCursor: true })
-        .on('pointerover', () => menuBtn.setStyle({ fill: '#ff0000' }))
+        .on('pointerover', () => menuBtn.setStyle({ fill: isVictory ? '#ffff00' : '#ff0000' }))
         .on('pointerout', () => menuBtn.setStyle({ fill: '#ffffff' }))
         .on('pointerdown', () => {
             this.sound.stopAll();
             this.scene.start('MenuScene');
         });
+        
+        // Fade in animation
+        this.cameras.main.fadeIn(500, 0, 0, 0);
     }
 }
