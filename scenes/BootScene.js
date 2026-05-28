@@ -1,124 +1,117 @@
+/**
+ * ELEMENTAL CLASH - Boot Scene
+ * Load all game assets for 4 elemental fighters
+ */
+
+import { manifest } from '../assets/Elemental/manifest.js';
+
 export class BootScene extends Phaser.Scene {
     constructor() {
         super('BootScene');
     }
 
     preload() {
-        // Load UI assets if any
-        this.load.setBaseURL('./');
+        // Loading bar
+        this.createLoadingBar();
 
-        // Player - Arka Character
-        this.load.image('player_idle_1', 'assets/characters/Arka/idle/idle_1.png');
-        this.load.image('player_idle_2', 'assets/characters/Arka/idle/idle_2.png');
-        this.load.image('player_idle_3', 'assets/characters/Arka/idle/idle_3.png');
-        this.load.image('player_idle_4', 'assets/characters/Arka/idle/idle_4.png');
-        this.load.image('player_idle_5', 'assets/characters/Arka/idle/idle_5.png');
-        
-        this.load.image('player_run_1', 'assets/characters/Arka/run/run_1.png');
-        this.load.image('player_run_2', 'assets/characters/Arka/run/run_2.png');
-        this.load.image('player_run_3', 'assets/characters/Arka/run/run_3.png');
-        this.load.image('player_run_4', 'assets/characters/Arka/run/run_4.png');
-        this.load.image('player_run_5', 'assets/characters/Arka/run/run_5.png');
-        this.load.image('player_run_6', 'assets/characters/Arka/run/run_6.png');
-        
-        this.load.image('player_jump_1', 'assets/characters/Arka/jump/jump_1.png');
-        this.load.image('player_jump_2', 'assets/characters/Arka/jump/jump_2.png');
-        this.load.image('player_jump_3', 'assets/characters/Arka/jump/jump_3.png');
-        this.load.image('player_jump_4', 'assets/characters/Arka/jump/jump_4.png');
-        
-        this.load.image('player_attack_1', 'assets/characters/Arka/attack/attack_1.png');
-        this.load.image('player_attack_2', 'assets/characters/Arka/attack/attack_2.png');
-        this.load.image('player_attack_3', 'assets/characters/Arka/attack/attack_3.png');
-        this.load.image('player_attack_4', 'assets/characters/Arka/attack/attack_4.png');
-        this.load.image('player_attack_5', 'assets/characters/Arka/attack/attack_5.png');
-        
-        this.load.image('player_dead', 'assets/characters/Arka/dead/dead.png');
-        this.load.image('player_win', 'assets/characters/Arka/win/win.png');
+        // Load map assets (keep current map)
+        this.loadMapAssets();
 
-        // Boss - Bathara Kala
-        this.load.image('boss_idle_1', 'assets/bathara kala/idle_1boss.png');
-        this.load.image('boss_idle_2', 'assets/bathara kala/idle_2boss.png');
-        this.load.image('boss_idle_3', 'assets/bathara kala/idle_3boss.png');
-        this.load.image('boss_idle_4', 'assets/bathara kala/idle_4boss.png');
-        
-        this.load.image('boss_run_1', 'assets/bathara kala/run_1boss.png');
-        this.load.image('boss_run_2', 'assets/bathara kala/run_2boss.png');
-        this.load.image('boss_run_3', 'assets/bathara kala/run_3boss.png');
-        this.load.image('boss_run_4', 'assets/bathara kala/run_4boss.png');
-        this.load.image('boss_run_5', 'assets/bathara kala/run_5boss.png');
-        
-        this.load.image('boss_attack_1', 'assets/bathara kala/attack_1boss.png');
-        this.load.image('boss_attack_2', 'assets/bathara kala/attack_2boss.png');
-        this.load.image('boss_attack_3', 'assets/bathara kala/attack_3boss.png');
-        this.load.image('boss_attack_4', 'assets/bathara kala/attack_4boss.png');
-        
-        this.load.image('boss_hurt_1', 'assets/bathara kala/hurt_1boss.png');
-        this.load.image('boss_hurt_2', 'assets/bathara kala/hurt_2boss.png');
-        
-        this.load.image('boss_dead_1', 'assets/bathara kala/dead_1boss.png');
-        this.load.image('boss_dead_2', 'assets/bathara kala/dead_2boss.png');
-        this.load.image('boss_dead_3', 'assets/bathara kala/dead_3boss.png');
+        // Load UI assets
+        this.loadUIAssets();
 
-        // Map - Throne Room
-        this.load.image('background', 'assets/map/2/throne room.png');
-        this.load.image('map_layer_1', 'assets/map/2/1.png');
-        this.load.image('map_layer_2', 'assets/map/2/2.png');
-        this.load.image('map_layer_3', 'assets/map/2/3.png');
-        this.load.image('map_layer_4', 'assets/map/2/4.png');
-        this.load.image('platform', 'assets/map/2/5.png');
+        // Load sounds
+        this.loadSounds();
 
-        // UI
-        this.load.image('hp_player', 'assets/ui/hp_player.png');
-        this.load.image('hp_boss', 'assets/ui/hp_boss.png');
+        // Load all 4 elemental characters from manifest
+        for (const [charKey, charAnims] of Object.entries(manifest)) {
+            console.log(`[BootScene] Preloading ${charKey} frames from manifest...`);
+            for (const [animKey, framePaths] of Object.entries(charAnims)) {
+                framePaths.forEach((path, index) => {
+                    const frameKey = `${charKey}_${animKey}_${index + 1}`;
+                    this.load.image(frameKey, path);
+                });
+            }
+        }
 
+        // Load character portraits
+        this.loadPortraits();
+    }
+
+    createLoadingBar() {
+        const width = 600;
+        const height = 30;
+        const x = (1280 - width) / 2;
+        const y = 360;
+
+        // Background
+        const bg = this.add.rectangle(640, y, width, height, 0x222222);
+        bg.setStrokeStyle(2, 0xffffff);
+
+        // Progress bar
+        const bar = this.add.rectangle(x, y, 0, height - 4, 0xffaa00);
+        bar.setOrigin(0, 0.5);
+
+        // Loading text
+        const loadingText = this.add.text(640, y - 50, 'LOADING...', {
+            fontSize: '32px',
+            fill: '#ffffff',
+            fontStyle: 'bold'
+        }).setOrigin(0.5);
+
+        // Update progress
+        this.load.on('progress', (value) => {
+            bar.width = (width - 4) * value;
+        });
+
+        this.load.on('complete', () => {
+            loadingText.setText('COMPLETE!');
+            this.time.delayedCall(500, () => {
+                this.scene.start('MainMenuScene');
+            });
+        });
+    }
+
+    loadMapAssets() {
+        // Battleground2 - Official battle arena (Bright version)
+        const mapPath = 'assets/map/map/Battleground2/Bright';
+        
+        this.load.image('bg_battleground2', `${mapPath}/bg.png`);
+        this.load.image('mountains_battleground2', `${mapPath}/mountaims.png`);
+        this.load.image('wall_battleground2', `${mapPath}/wall@windows.png`);
+        this.load.image('columns_battleground2', `${mapPath}/columns&falgs.png`);
+        this.load.image('dragon_battleground2', `${mapPath}/dragon.png`);
+        this.load.image('candeliar_battleground2', `${mapPath}/candeliar.png`);
+        this.load.image('floor_battleground2', `${mapPath}/floor.png`);
+        
+        console.log('[BootScene] Loading Battleground2 map assets...');
+    }
+
+    loadUIAssets() {
         // Particles
         this.load.image('particle', 'assets/particles/particle.png');
         this.load.image('ember', 'assets/particles/ember.png');
         this.load.image('smoke', 'assets/particles/smoke.png');
         this.load.image('slash', 'assets/particles/slash.png');
+    }
 
-        // Sounds
+    loadSounds() {
+        this.load.audio('bgm', 'assets/sounds/bgm.mp3');
         this.load.audio('attack', 'assets/sounds/attack.wav');
         this.load.audio('hit', 'assets/sounds/hit.wav');
         this.load.audio('jump', 'assets/sounds/jump.wav');
         this.load.audio('boss', 'assets/sounds/boss.wav');
-        this.load.audio('bgm', 'assets/sounds/bgm.mp3');
+    }
 
-        // Loading bar
-        let progressBar = this.add.graphics();
-        let progressBox = this.add.graphics();
-        progressBox.fillStyle(0x222222, 0.8);
-        progressBox.fillRect(240, 270, 320, 50);
+    loadPortraits() {
+        // Character portraits for select screen
+        this.load.image('portrait_gale', 'assets/Elemental/gale/wind_hashashin.png');
+        this.load.image('portrait_homura', 'assets/Elemental/homura/fire_knight.png');
+        this.load.image('portrait_sylvan', 'assets/Elemental/sylvan/leaf_ranger.png');
+        this.load.image('portrait_terra', 'assets/Elemental/terra/ground_monk.png');
+    }
 
-        this.load.on('progress', (value) => {
-            progressBar.clear();
-            progressBar.fillStyle(0xff0000, 1);
-            progressBar.fillRect(250, 280, 300 * value, 30);
-        });
-
-        this.load.on('loaderror', (file) => {
-            console.error('[BootScene] Failed to load:', file.key, file.src);
-        });
-
-        this.load.on('filecomplete', (key) => {
-            if (key.startsWith('player_run')) {
-                console.log('[BootScene] Loaded:', key);
-            }
-        });
-
-        this.load.on('complete', () => {
-            progressBar.destroy();
-            progressBox.destroy();
-            
-            // Verify run textures loaded
-            console.log('[BootScene] Checking run textures...');
-            for (let i = 1; i <= 6; i++) {
-                const key = `player_run_${i}`;
-                const exists = this.textures.exists(key);
-                console.log(`[BootScene] ${key}: ${exists ? '✓' : '✗'}`);
-            }
-            
-            this.scene.start('MenuScene');
-        });
+    create() {
+        console.log('[BootScene] All assets loaded successfully!');
     }
 }
