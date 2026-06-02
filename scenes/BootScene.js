@@ -96,11 +96,22 @@ export class BootScene extends Phaser.Scene {
     }
 
     loadSounds() {
-        this.load.audio('bgm', 'assets/sounds/bgm.mp3');
+        this.load.audio('bgm', 'assets/sounds/bgm.wav');
         this.load.audio('attack', 'assets/sounds/attack.wav');
         this.load.audio('hit', 'assets/sounds/hit.wav');
         this.load.audio('jump', 'assets/sounds/jump.wav');
         this.load.audio('boss', 'assets/sounds/boss.wav');
+
+        // Character-specific elemental sounds
+        const characters = ['gale', 'homura', 'sylvan', 'terra'];
+        const actions = ['attack', 'jump', 'hurt', 'dead'];
+
+        characters.forEach(char => {
+            actions.forEach(action => {
+                const key = `${char}_${action}`;
+                this.load.audio(key, `assets/sounds/${key}.wav`);
+            });
+        });
     }
 
     loadPortraits() {
@@ -113,5 +124,12 @@ export class BootScene extends Phaser.Scene {
 
     create() {
         console.log('[BootScene] All assets loaded successfully!');
+        
+        // Initialize settings from localStorage
+        const bgmEnabled = localStorage.getItem('bgmEnabled');
+        const sfxEnabled = localStorage.getItem('sfxEnabled');
+
+        this.registry.set('bgmEnabled', bgmEnabled !== 'false');
+        this.registry.set('sfxEnabled', sfxEnabled !== 'false');
     }
 }

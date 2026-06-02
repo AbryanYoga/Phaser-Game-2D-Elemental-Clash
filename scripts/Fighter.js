@@ -48,7 +48,8 @@ export class Fighter extends Phaser.Physics.Arcade.Sprite {
 
         // Physics setup - PROPER SCALING AND ALIGNMENT
         this.setOrigin(0.5, 1);  // Bottom-center for ground alignment
-        this.setScale(1.5);      // Increased scale for visibility
+        this.setScale(3.2);      // Increased scale for visibility
+        this.characterScale = 3.2;
         this.body.setSize(60, 100);
         this.body.setOffset(114, 28);
         this.setCollideWorldBounds(true);
@@ -63,7 +64,7 @@ export class Fighter extends Phaser.Physics.Arcade.Sprite {
         this.createAnimations();
         this.playAnimation('idle');
 
-        console.log(`[Fighter] ${characterKey} initialized at scale 1.5`);
+        console.log(`[Fighter] ${characterKey} initialized at scale 3.2`);
     }
 
     createAnimations() {
@@ -453,7 +454,7 @@ export class Fighter extends Phaser.Physics.Arcade.Sprite {
 
         this.scene.cameras.main.shake(180, 0.012);
         this.scene.cameras.main.flash(180, 255, 0, 0, false);
-        this.playSound('hit', { volume: 0.5 });
+        this.playSound('hurt', { volume: 0.5 });
 
         if (this.hp <= 0) {
             this.die();
@@ -477,18 +478,28 @@ export class Fighter extends Phaser.Physics.Arcade.Sprite {
         this.setVelocity(0);
         this.playAnimation('death');
         this.setTint(0x666666);
+        this.playSound('dead', { volume: 0.6 });
 
         this.scene.time.delayedCall(1500, () => {
             this.scene.endMatch(this.isPlayer1 ? 'player2' : 'player1');
         });
     }
 
-    playSound(key, config = {}) {
+    playSound(soundName, config = {}) {
         if (this.scene.registry.get('sfxEnabled') !== false) {
             try {
-                this.scene.sound.play(key, config);
+                const charSpecificKey = `${this.characterKey}_${soundName}`;
+                if (this.scene.cache.audio.exists(charSpecificKey)) {
+                    this.scene.sound.play(charSpecificKey, config);
+                } else {
+                    let fallbackKey = soundName;
+                    if (soundName === 'hurt') {
+                        fallbackKey = 'hit';
+                    }
+                    this.scene.sound.play(fallbackKey, config);
+                }
             } catch (e) {
-                console.warn('[Fighter] Sound error:', key);
+                console.warn('[Fighter] Sound error:', soundName, e);
             }
         }
     }

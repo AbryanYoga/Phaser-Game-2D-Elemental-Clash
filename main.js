@@ -32,6 +32,9 @@ const config = {
     ],
     pixelArt: true,
     roundPixels: true,
+    input: {
+        gamepad: true
+    },
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,

@@ -202,45 +202,9 @@ export class BattleScene extends Phaser.Scene {
         this.p2SpecialBg.fillStyle(0x000000, 0.5);
         this.p2SpecialBg.fillRect(1050, 100, 200, 15).setScrollFactor(0);
         this.p2SpecialBar = this.add.graphics();
-
-        // Control guide (temporary)
-        this.showControlGuide();
     }
 
-    showControlGuide() {
-        const guideBg = this.add.rectangle(640, 650, 1000, 120, 0x000000, 0.8).setScrollFactor(0);
-        
-        const guideText = this.add.text(640, 610, 'PLAYER 1 CONTROLS', {
-            fontSize: '20px',
-            fill: '#ffaa00',
-            fontStyle: 'bold'
-        }).setOrigin(0.5).setScrollFactor(0);
 
-        const controls1 = this.add.text(640, 645, 'A/D = Move  |  SPACE = Jump  |  LEFT CLICK = Attack/Combo  |  K = Special Attack (3rd Combo)', {
-            fontSize: '16px',
-            fill: '#ffffff'
-        }).setOrigin(0.5).setScrollFactor(0);
-
-        const controls2 = this.add.text(640, 670, 'RIGHT CLICK = Defend (70% reduction)  |  SHIFT/CTRL = Roll/Dodge (Invincible)', {
-            fontSize: '16px',
-            fill: '#ffffff'
-        }).setOrigin(0.5).setScrollFactor(0);
-
-        // Fade out after 8 seconds (longer to read)
-        this.time.delayedCall(8000, () => {
-            this.tweens.add({
-                targets: [guideBg, guideText, controls1, controls2],
-                alpha: 0,
-                duration: 1000,
-                onComplete: () => {
-                    guideBg.destroy();
-                    guideText.destroy();
-                    controls1.destroy();
-                    controls2.destroy();
-                }
-            });
-        });
-    }
 
     showFightIntro() {
         // Disable controls during intro
@@ -283,30 +247,54 @@ export class BattleScene extends Phaser.Scene {
     }
 
     update() {
-        // ESC to pause
-        if (Phaser.Input.Keyboard.JustDown(this.keys.ESC)) {
+        const pad = this.input.gamepad.pad1;
+        
+        // Track Gamepad button justDown states
+        if (!this.padPrevButtons) this.padPrevButtons = {};
+        const isButtonJustDown = (btnIndex) => {
+            if (!pad || !pad.buttons[btnIndex]) return false;
+            const pressed = pad.buttons[btnIndex].pressed;
+            const wasPressed = !!this.padPrevButtons[btnIndex];
+            this.padPrevButtons[btnIndex] = pressed;
+            return pressed && !wasPressed;
+        };
+
+        const isButtonDown = (btnIndex) => {
+            return pad && pad.buttons[btnIndex] && pad.buttons[btnIndex].pressed;
+        };
+
+        // ESC or Gamepad Start (button 9) to pause
+        if (Phaser.Input.Keyboard.JustDown(this.keys.ESC) || isButtonJustDown(9)) {
             this.togglePause();
         }
 
         if (this.isPaused) return;
 
         if (this.player1 && this.player1.active) {
-            // FIXED: All controls properly mapped with DEBUG
+            // Read Gamepad axes
+            const stickX = pad && pad.axes[0] ? pad.axes[0].value : 0;
+
+            // Combine Keyboard, Mouse and Gamepad inputs
             const p1Controls = {
-                left: this.keys.A.isDown,
-                right: this.keys.D.isDown,
-                jump: Phaser.Input.Keyboard.JustDown(this.keys.SPACE),
-                attack: this.player1LeftClick || Phaser.Input.Keyboard.JustDown(this.keys.J),
-                special: Phaser.Input.Keyboard.JustDown(this.keys.K),
-                defend: this.player1RightClick || this.keys.L.isDown,
-                roll: Phaser.Input.Keyboard.JustDown(this.keys.SHIFT) || Phaser.Input.Keyboard.JustDown(this.keys.CTRL)
+                left: this.keys.A.isDown || (pad && (pad.left || stickX < -0.5)),
+                right: this.keys.D.isDown || (pad && (pad.right || stickX > 0.5)),
+                jump: Phaser.Input.Keyboard.JustDown(this.keys.SPACE) || isButtonJustDown(0), // Gamepad A (0)
+                attack: this.player1LeftClick || Phaser.Input.Keyboard.JustDown(this.keys.J) || isButtonJustDown(2), // Gamepad X (2)
+                special: Phaser.Input.Keyboard.JustDown(this.keys.K) || isButtonJustDown(3), // Gamepad Y (3)
+                defend: this.player1RightClick || this.keys.L.isDown || isButtonDown(1) || isButtonDown(6) || isButtonDown(7), // Gamepad B (1) or Triggers (6/7)
+                roll: Phaser.Input.Keyboard.JustDown(this.keys.SHIFT) || Phaser.Input.Keyboard.JustDown(this.keys.CTRL) || isButtonJustDown(4) || isButtonJustDown(5) // Gamepad shoulders L1/R1 (4/5)
             };
             
             // DEBUG: Log when special keys are pressed
-            if (p1Controls.jump) console.log('[BattleScene] SPACE pressed - jump:', p1Controls.jump);
-            if (p1Controls.special) console.log('[BattleScene] K pressed - special:', p1Controls.special);
-            if (p1Controls.defend) console.log('[BattleScene] RIGHT CLICK/L pressed - defend:', p1Controls.defend);
-            if (p1Controls.roll) console.log('[BattleScene] SHIFT/CTRL pressed - roll:', p1Controls.roll);
+            if (p1Controls.jump) console.log('[BattleScene] Jump triggered (keyboard/pad)');
+            if (p1Controls.special) console.log('[BattleScene] Special triggered (keyboard/pad)');
+            if (p1Controls.defend) {
+                if (!this.lastDefendLogTime || this.time.now - this.lastDefendLogTime > 1000) {
+                    console.log('[BattleScene] Defend active (keyboard/pad)');
+                    this.lastDefendLogTime = this.time.now;
+                }
+            }
+            if (p1Controls.roll) console.log('[BattleScene] Roll triggered (keyboard/pad)');
             
             // Reset click flags after reading
             if (this.player1LeftClick) {
@@ -462,7 +450,9 @@ export class BattleScene extends Phaser.Scene {
     }
 
     togglePause() {
-        if (this.isPaused) {
+        if (this.controlsGuideContainer) {
+            this.closeControlsGuide();
+        } else if (this.isPaused) {
             this.resumeGame();
         } else {
             this.pauseGame();
@@ -482,7 +472,7 @@ export class BattleScene extends Phaser.Scene {
         this.pauseMenu.add(overlay);
 
         // Title
-        const title = this.add.text(640, 200, 'PAUSED', {
+        const title = this.add.text(640, 180, 'PAUSED', {
             fontSize: '72px',
             fill: '#ffaa00',
             fontStyle: 'bold',
@@ -491,21 +481,22 @@ export class BattleScene extends Phaser.Scene {
         }).setOrigin(0.5);
         this.pauseMenu.add(title);
 
-        // Menu options
+        // Menu options (with CONTROLS guide option)
         const menuOptions = [
             { text: 'RESUME', action: () => this.resumeGame() },
+            { text: 'CONTROLS', action: () => this.showControlsGuide() },
             { text: 'FULLSCREEN', action: () => FullscreenManager.toggle(this) },
             { text: 'MAIN MENU', action: () => this.returnToMenu() }
         ];
 
-        const startY = 350;
-        const spacing = 80;
+        const startY = 280;
+        const spacing = 70;
 
         menuOptions.forEach((option, index) => {
             const y = startY + (index * spacing);
             
             const btn = this.add.text(640, y, option.text, {
-                fontSize: '40px',
+                fontSize: '36px',
                 fill: '#ffffff',
                 fontStyle: 'bold',
                 stroke: '#000000',
@@ -532,7 +523,7 @@ export class BattleScene extends Phaser.Scene {
         });
 
         // ESC hint
-        const hint = this.add.text(640, 600, 'Press ESC to Resume', {
+        const hint = this.add.text(640, 580, 'Press ESC to Resume', {
             fontSize: '20px',
             fill: '#888888',
             fontStyle: 'italic'
@@ -540,10 +531,129 @@ export class BattleScene extends Phaser.Scene {
         this.pauseMenu.add(hint);
     }
 
+    showControlsGuide() {
+        // Temporarily hide main pause menu container to prevent multiple inputs
+        if (this.pauseMenu) {
+            this.pauseMenu.setVisible(false);
+        }
+
+        // Create the controls container
+        this.controlsGuideContainer = this.add.container(0, 0).setDepth(10000).setScrollFactor(0);
+
+        // Dark overlay
+        const overlay = this.add.rectangle(640, 360, 1280, 720, 0x070710, 0.95);
+        this.controlsGuideContainer.add(overlay);
+
+        // Panel Box (Bronze Border)
+        const panel = this.add.graphics();
+        panel.fillStyle(0x111122, 0.85);
+        panel.fillRect(240, 100, 800, 520);
+        panel.lineStyle(5, 0xd47a00, 0.95);
+        panel.strokeRect(240, 100, 800, 520);
+        this.controlsGuideContainer.add(panel);
+
+        // Title
+        const title = this.add.text(640, 140, 'GAMEPLAY CONTROLS', {
+            fontSize: '40px',
+            fill: '#ffaa00',
+            fontStyle: 'bold',
+            stroke: '#000000',
+            strokeThickness: 5
+        }).setOrigin(0.5);
+        this.controlsGuideContainer.add(title);
+
+        // Controls List (Dual Keyboard & Gamepad descriptions)
+        const controls = [
+            { key: 'A / D  |  Stick L / D-Pad', action: 'Gerak Kiri / Kanan (Move)' },
+            { key: 'SPACE  |  Tombol A', action: 'Melompat (Jump)' },
+            { key: 'KLIK KIRI / J  |  Tombol X', action: 'Serangan Biasa (Attack)' },
+            { key: 'K  |  Tombol Y', action: 'Serangan Spesial (Special)' },
+            { key: 'KLIK KANAN / L  |  B / L2 / R2', action: 'Bertahan (Defend)' },
+            { key: 'SHIFT / CTRL  |  L1 / R1', action: 'Guling Menghindar (Roll)' },
+            { key: 'ESC  |  Tombol START', action: 'Pause / Jeda Permainan' }
+        ];
+
+        let startY = 210;
+        const spacingY = 44;
+
+        controls.forEach((item, index) => {
+            const y = startY + (index * spacingY);
+            
+            // Key binding (Left aligned)
+            const keyTxt = this.add.text(280, y, item.key, {
+                fontSize: '20px',
+                fill: '#00ffff',
+                fontStyle: 'bold',
+                stroke: '#000000',
+                strokeThickness: 3
+            }).setOrigin(0, 0.5);
+            
+            // Dotted separator
+            const dotsTxt = this.add.text(490, y, '........................................', {
+                fontSize: '20px',
+                fill: '#444466'
+            }).setOrigin(0, 0.5);
+
+            // Action explanation (Right aligned)
+            const actTxt = this.add.text(1000, y, item.action, {
+                fontSize: '18px',
+                fill: '#ffffff',
+                stroke: '#000000',
+                strokeThickness: 2
+            }).setOrigin(1, 0.5);
+
+            this.controlsGuideContainer.add([keyTxt, dotsTxt, actTxt]);
+        });
+
+        // Back Button
+        const backBtn = this.add.text(640, 565, 'BACK TO MENU', {
+            fontSize: '28px',
+            fill: '#ffffff',
+            fontStyle: 'bold',
+            stroke: '#000000',
+            strokeThickness: 4
+        })
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true });
+
+        backBtn.on('pointerover', () => {
+            backBtn.setStyle({ fill: '#ffaa00' });
+            backBtn.setScale(1.1);
+            this.sound.play('hit', { volume: 0.2, rate: 2 });
+        });
+
+        backBtn.on('pointerout', () => {
+            backBtn.setStyle({ fill: '#ffffff' });
+            backBtn.setScale(1);
+        });
+
+        backBtn.on('pointerdown', () => {
+            this.sound.play('attack', { volume: 0.3 });
+            this.closeControlsGuide();
+        });
+
+        this.controlsGuideContainer.add(backBtn);
+    }
+
+    closeControlsGuide() {
+        if (this.controlsGuideContainer) {
+            this.controlsGuideContainer.destroy();
+            this.controlsGuideContainer = null;
+        }
+        if (this.pauseMenu) {
+            this.pauseMenu.setVisible(true);
+        }
+    }
+
     resumeGame() {
         this.isPaused = false;
         this.physics.resume();
         this.sound.resumeAll();
+
+        if (this.controlsGuideContainer) {
+            this.controlsGuideContainer.destroy();
+            this.controlsGuideContainer = null;
+        }
 
         if (this.pauseMenu) {
             this.pauseMenu.destroy();
@@ -553,6 +663,10 @@ export class BattleScene extends Phaser.Scene {
 
     returnToMenu() {
         this.sound.stopAll();
+        if (this.controlsGuideContainer) {
+            this.controlsGuideContainer.destroy();
+            this.controlsGuideContainer = null;
+        }
         this.scene.start('MainMenuScene');
     }
 }

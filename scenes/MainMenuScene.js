@@ -27,11 +27,17 @@ export class MainMenuScene extends Phaser.Scene {
         this.cameras.main.fadeIn(800, 0, 0, 0);
         
         // BGM
-        if (!this.sound.get('bgm')) {
-            this.sound.play('bgm', {
-                loop: true,
-                volume: 0.3
-            });
+        if (this.registry.get('bgmEnabled') !== false) {
+            let bgm = this.sound.get('bgm');
+            if (!bgm) {
+                bgm = this.sound.add('bgm');
+            }
+            if (!bgm.isPlaying) {
+                bgm.play({
+                    loop: true,
+                    volume: 0.3
+                });
+            }
         }
     }
 

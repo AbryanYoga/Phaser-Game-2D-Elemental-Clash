@@ -46,7 +46,10 @@ export class SettingsScene extends Phaser.Scene {
 
         // Apply BGM setting
         if (this.registry.get('bgmEnabled') === false) {
-            this.sound.stopAll();
+            const bgm = this.sound.get('bgm');
+            if (bgm && bgm.isPlaying) {
+                bgm.stop();
+            }
         }
     }
 
@@ -102,11 +105,18 @@ export class SettingsScene extends Phaser.Scene {
             // Apply settings
             if (settingKey === 'bgmEnabled') {
                 if (newValue) {
-                    if (!this.sound.get('bgm')) {
-                        this.sound.play('bgm', { loop: true, volume: 0.3 });
+                    let bgm = this.sound.get('bgm');
+                    if (!bgm) {
+                        bgm = this.sound.add('bgm');
+                    }
+                    if (!bgm.isPlaying) {
+                        bgm.play({ loop: true, volume: 0.3 });
                     }
                 } else {
-                    this.sound.stopAll();
+                    const bgm = this.sound.get('bgm');
+                    if (bgm && bgm.isPlaying) {
+                        bgm.stop();
+                    }
                 }
             }
 
